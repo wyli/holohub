@@ -128,7 +128,8 @@ def generate_app_cards():
             "description": description,
             "image_url": image_url,
             "tags": metadata.get("tags", []) if metadata else [],
-            "app_title": app_title
+            "app_title": app_title,
+            "app_url": f"{app_name.lower().replace(' ', '-')}/"
         }
 
     # Write the JSON file

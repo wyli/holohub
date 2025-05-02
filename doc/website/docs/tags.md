@@ -119,7 +119,7 @@ title: Applications by Category
 }
 
 .app-details h5 {
-  margin: 0.2rem 0 0.5rem 0;
+  margin: 0 0 0.5rem 0;
   font-size: 1rem;
   color: var(--md-default-fg-color);
 }
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             name: appName,
             description: "No description available.",
             image_url: null,
-            vendor: appName.split('/')[0] || '',
+            tags: tags,
             app_title: appName.split('/')[1] || appName
           };
 
@@ -301,7 +301,6 @@ document.addEventListener('DOMContentLoaded', async function() {
               />` : ''}
             </div>
             <div class="app-details">
-              <h4>${cardData.vendor}</h4>
               <h5>${cardData.app_title}</h5>
               <p>${cardData.description}</p>
               <div class="app-tags">
