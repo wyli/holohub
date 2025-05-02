@@ -270,15 +270,15 @@ def get_full_image_url(relative_path, readme_path=None):
         git_root = get_git_root()
         rel_image_path = image_path.relative_to(git_root)
 
-        url = urljoin(get_raw_base_url(), str(rel_image_path))
-        try:
-            response = requests.head(url, timeout=5)
-            if response.status_code == 200:
-                return str(url)
-            else:
-                logger.warning(f"URL {url} returned status code {response.status_code}")
-        except requests.RequestException as e:
-            logger.warning(f"Error checking URL {url}: {e}")
+        # url = urljoin(get_raw_base_url(), str(rel_image_path))
+        # try:
+        #     response = requests.head(url, timeout=5)
+        #     if response.status_code == 200:
+        #         return str(url)
+        #     else:
+        #         logger.warning(f"URL {url} returned status code {response.status_code}")
+        # except requests.RequestException as e:
+        #     logger.warning(f"Error checking URL {url}: {e}")
         return str(urljoin(get_raw_base_url("main"), str(rel_image_path)))
 
     logger.warning(f"Using direct URL without context: {relative_path}")
