@@ -127,25 +127,9 @@ def generate_app_cards():
             "name": proper_name,
             "description": description,
             "image_url": image_url,
-            "vendor": vendor,
+            "tags": metadata.get("tags", []) if metadata else [],
             "app_title": app_title
         }
-
-    # Process other apps from tags data that might not be in the applications directory
-    for app_name in tags_data:
-        if app_name not in app_cards:
-            # Split into vendor and app title
-            vendor_parts = app_name.split('/')
-            vendor = vendor_parts[0] if len(vendor_parts) > 1 else ""
-            app_title = vendor_parts[1] if len(vendor_parts) > 1 else app_name
-
-            app_cards[app_name] = {
-                "name": app_name,
-                "description": "No description available.",
-                "image_url": None,
-                "vendor": vendor,
-                "app_title": app_title
-            }
 
     # Write the JSON file
     output_path = git_repo_path / OUTPUT_FILE

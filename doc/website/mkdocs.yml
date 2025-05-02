@@ -85,8 +85,6 @@ plugins:
       file_pattern: '.*\.(md|ipynb)$'
   - site-urls
 
-# Empty not_in_nav section to include tags.md in navigation
-not_in_nav: |
 
 watch:
   - ../../applications
