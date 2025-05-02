@@ -56,6 +56,15 @@ def find_readme_path(app_dir, git_repo_path):
     return None
 
 
+def get_app_url(readme_path, git_repo_path):
+    """Generate the relative path for the app documentation link based on README location."""
+    if not readme_path:
+        return None
+    readme_dir = readme_path.parent
+    rel_path = readme_dir.relative_to(git_repo_path)
+    return f"{rel_path}/"
+
+
 def generate_app_cards():
     """Generate app cards data for all applications."""
     git_repo_path = get_git_root()
@@ -122,6 +131,7 @@ def generate_app_cards():
         vendor = vendor_parts[0] if len(vendor_parts) > 1 else ""
         app_title = vendor_parts[1] if len(vendor_parts) > 1 else proper_name
 
+        app_url = get_app_url(readme_path, git_repo_path)
         # Create app card data
         app_cards[proper_name] = {
             "name": proper_name,
@@ -129,7 +139,7 @@ def generate_app_cards():
             "image_url": image_url,
             "tags": metadata.get("tags", []) if metadata else [],
             "app_title": app_title,
-            "app_url": f"{app_name.lower().replace(' ', '-')}/"
+            "app_url": app_url
         }
 
     # Write the JSON file

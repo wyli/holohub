@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
           // Make the card clickable
           card.addEventListener('click', function() {
-            window.location.href = `${baseUrl}applications/${appNameKebab}/`;
+            window.location.href = `${baseUrl}${cardData.app_url}`;
           });
 
           // Add hover effect
