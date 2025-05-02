@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <!-- Add body class to application categories page -->
+  {% if page.meta and page.meta.title == "Applications by Category" %}
+  <script>
+    document.body.classList.add('tag-page-active');
+  </script>
+  {% endif %}
+{% endblock %}

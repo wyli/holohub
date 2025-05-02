@@ -48,6 +48,10 @@ extra_css:
   - assets/css/jupyter-themes.css
   - assets/css/header-custom.css
   - assets/css/featured-apps.css
+  - assets/css/tag-sidebar.css
+
+extra_javascript:
+  - assets/js/tag-sidebar.js
 
 plugins:
   - search:
@@ -57,6 +61,8 @@ plugins:
       scripts:
         - scripts/generate_pages.py
         - scripts/generate_featured_apps.py
+        - scripts/generate_tags_json.py
+        - scripts/generate_app_cards.py
 
   - macros
   - tags
@@ -79,8 +85,8 @@ plugins:
       file_pattern: '.*\.(md|ipynb)$'
   - site-urls
 
+# Empty not_in_nav section to include tags.md in navigation
 not_in_nav: |
-  tags.md
 
 watch:
   - ../../applications
