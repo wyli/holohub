@@ -14,3 +14,8 @@ to avoid redundancy with the page title */
 .md-content h1 > a.headerlink {
   display: none;
 }
+
+/* Hide the "Home" item in the sidebar navigation */
+.md-nav--primary > .md-nav__list > .md-nav__item:first-child {
+  display: none;
+}

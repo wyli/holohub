@@ -130,11 +130,28 @@ document.addEventListener('DOMContentLoaded', async function() {
       // Build the tags page URL with the correct base path
       const tagsPath = `${baseUrl}tags/`;
 
-      // Make the header clickable to directly show applications for this category
+      // Make the header clickable to load content without page reload
       categoryHeader.addEventListener('click', function(e) {
         e.preventDefault();
-        // Navigate to the tags page with this category as the query
-        window.location.href = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
+
+        // Update URL without reloading the page
+        const newUrl = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
+        history.pushState({ category: category.title }, '', newUrl);
+
+        // Trigger a custom event that the page can listen for to update content
+        const event = new CustomEvent('categorySelected', {
+          detail: { category: category.title }
+        });
+        document.dispatchEvent(event);
+
+        // If using MkDocs with instant loading (if available)
+        if (window.app && window.app.document) {
+          // Try to use MkDocs' internal navigation
+          window.app.document.$get(newUrl);
+        } else {
+          // Fallback: Update page content via fetch (optional implementation)
+          loadCategoryContent(category.title, tagsPath);
+        }
       });
 
       categoryItem.appendChild(categoryHeader);
@@ -158,3 +175,46 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.error('Error loading tag sidebar:', error);
   }
 });
+
+// Function to load category content without page reload
+async function loadCategoryContent(category, tagsPath) {
+  try {
+    // Find the main content container
+    const contentContainer = document.querySelector('.md-content__inner');
+    if (!contentContainer) return;
+
+    // Add loading indicator if needed
+    contentContainer.classList.add('loading');
+
+    // Fetch the content for this category
+    const response = await fetch(`${tagsPath}?category=${encodeURIComponent(category)}&partial=true`);
+
+    if (response.ok) {
+      const html = await response.text();
+
+      // Extract just the content part if it's a full page
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+
+      // Look for the main content in the response
+      const newContent = tempDiv.querySelector('.md-content__inner') || tempDiv;
+
+      // Update just the content area
+      contentContainer.innerHTML = newContent.innerHTML;
+
+      // Update page title
+      const titleElement = tempDiv.querySelector('title');
+      if (titleElement) {
+        document.title = titleElement.textContent;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading category content:', error);
+  } finally {
+    // Remove loading indicator
+    const contentContainer = document.querySelector('.md-content__inner');
+    if (contentContainer) {
+      contentContainer.classList.remove('loading');
+    }
+  }
+}
