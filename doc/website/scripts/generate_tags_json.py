@@ -26,6 +26,7 @@ import mkdocs_gen_files
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from generate_pages import get_git_root, logger
+from common_utils import find_app_pairs
 
 COMPONENT_TYPES = ["applications"]
 
@@ -53,6 +54,13 @@ CATEGORY_TITLE_MAPPING = {
     "visualization": "Visualization"
 }
 
+# Category mapping for tag matching - same as in the JavaScript
+CATEGORY_TAG_MAPPING = {
+    "networking": "networking and distributed computing",
+    "nlp & conversational": "natural language and conversational ai",
+    "computer vision": "computer vision and perception"
+}
+
 def format_category_title(title):
     """Format a category title with proper capitalization."""
     # Convert to lowercase for matching
@@ -64,6 +72,26 @@ def format_category_title(title):
 
     # Otherwise use the original with first letter of each word capitalized
     return title.title()
+
+def matches_category(tag, category):
+    """Check if a tag matches a category using the same logic as the JavaScript."""
+    tag_lower = tag.lower()
+    category_lower = category.lower()
+
+    # Direct match
+    if tag_lower == category_lower:
+        return True
+
+    # Contains match
+    if category_lower in tag_lower:
+        return True
+
+    # Special case mappings
+    for js_category, full_category in CATEGORY_TAG_MAPPING.items():
+        if category_lower == js_category.lower() and full_category.lower() in tag_lower:
+            return True
+
+    return False
 
 def generate_tags_json() -> None:
     """Generate tags.json file with metadata about all tags and their associated pages."""
@@ -80,73 +108,80 @@ def generate_tags_json() -> None:
 
     # Dictionaries to collect the tag categories
     main_categories = set()  # First tags (e.g., "healthcare AI")
-    category_counts = Counter()  # Count occurrences of main categories
     subcategories = defaultdict(set)  # Second tags by main category (e.g., "video", "audio")
     related_tags = defaultdict(set)  # Additional tags by main category
 
-    # Process each component type
-    for component_type in COMPONENT_TYPES:
-        component_dir = git_repo_path / component_type
-        if not component_dir.exists():
-            logger.warning(f"Component directory not found: {component_dir}")
-            continue
+    # Apps by their tags for accurate category counting
+    app_tags = {}
 
-        # Parse the metadata.json files
-        for metadata_path in component_dir.rglob("metadata.json"):
-            try:
-                # Skip applications with {{ in the name (templates)
-                if "{{" in str(metadata_path):
-                    continue
-                if any(t in str(metadata_path) for t in ("data_writer", "operator", "xr_hello_holoscan")):
-                    continue
-                # Load metadata
-                with metadata_path.open("r") as metadata_file:
-                    metadata = json.load(metadata_file)
+    # Find all valid app pairs (metadata.json and README.md)
+    app_pairs = find_app_pairs(git_repo_path, COMPONENT_TYPES)
+    logger.info(f"Found {len(app_pairs)} valid application pairs")
 
-                # Get project type and metadata
-                project_type = list(metadata.keys())[0]
-                metadata = metadata[project_type]
+    # Process each application pair
+    for app_id, (metadata_path, readme_path) in app_pairs.items():
+        try:
+            # Load metadata
+            with metadata_path.open("r") as metadata_file:
+                metadata = json.load(metadata_file)
 
-                # Get tags
-                tags = metadata.get("tags", [])
-                if not tags:
-                    continue
+            # Get project type and metadata
+            project_type = list(metadata.keys())[0]
+            metadata = metadata[project_type]
 
-                # Get page path relative to docs directory
-                metadata_dir = metadata_path.parent
-                rel_dir = metadata_dir.relative_to(git_repo_path)
-                page_path = f"{rel_dir}/README.md"
+            # Get tags
+            tags = metadata.get("tags", [])
+            if not tags:
+                continue
 
-                # Create page metadata
-                page_metadata = {
-                    "title": metadata.get("name", "Untitled"),
-                    "path": str(page_path),
-                    "url": f"./{page_path}",  # Use relative URL
-                    "type": component_type,
-                    "tags": tags,
-                }
+            # Get component type (applications)
+            component_type = metadata_path.relative_to(git_repo_path).parts[0]
 
-                # Store tags data for the page
-                tags_data[page_metadata['title']] = tags
+            # Get page path relative to docs directory
+            page_path = str(readme_path.relative_to(git_repo_path))
 
-                # Extract tag categories (assuming first tag is main category, second is subcategory)
-                if tags:
-                    if len(tags) >= 1:
-                        main_category = tags[0]
-                        main_categories.add(main_category)
-                        # Count the occurrence of this main category
-                        category_counts[main_category] += 1
+            # Create page metadata
+            page_metadata = {
+                "title": metadata.get("name", "Untitled"),
+                "path": page_path,
+                "url": f"./{page_path}",  # Use relative URL
+                "type": component_type,
+                "tags": tags,
+            }
 
-                        if len(tags) >= 2:
-                            # Second tag is subcategory
-                            subcategories[main_category].add(tags[1])
+            # Store tags data for the page
+            app_title = page_metadata['title']
+            tags_data[app_title] = tags
+            app_tags[app_title] = tags
 
-                            # Remaining tags are related tags
-                            for tag in tags[2:]:
-                                related_tags[main_category].add(tag)
+            # Extract tag categories (assuming first tag is main category, second is subcategory)
+            if tags:
+                if len(tags) >= 1:
+                    main_category = tags[0]
+                    main_categories.add(main_category)
 
-            except Exception as e:
-                logger.error(f"Failed to process {metadata_path}: {e}")
+                    if len(tags) >= 2:
+                        # Second tag is subcategory
+                        subcategories[main_category].add(tags[1])
+
+                        # Remaining tags are related tags
+                        for tag in tags[2:]:
+                            related_tags[main_category].add(tag)
+
+        except Exception as e:
+            logger.error(f"Failed to process {metadata_path}: {e}")
+
+    # Now compute the category counts based on how apps will be displayed
+    category_counts = Counter()
+
+    # For each main category
+    for category in main_categories:
+        formatted_title = format_category_title(category)
+
+        # Count apps matching this category using the same logic as in JavaScript
+        for app_title, tags in app_tags.items():
+            if any(matches_category(tag, formatted_title) for tag in tags):
+                category_counts[category] += 1
 
     # Generate tag categories structure for the JavaScript file
     tag_categories = []
@@ -195,15 +230,24 @@ def generate_tags_json() -> None:
         if category["subcategories"] or category["isPrimary"]
     ]
 
+    # Create output directories if they don't exist
+    output_data_dir = git_repo_path / "docs" / "_data"
+    if not output_data_dir.exists():
+        output_data_dir = git_repo_path / "doc" / "website" / "docs" / "_data"
+        if not output_data_dir.exists():
+            output_data_dir.mkdir(parents=True, exist_ok=True)
+
     # Write tags.json to the site root
-    with open("docs/_data/tmp_tags.json", "w") as tags_file:
+    tags_file_path = output_data_dir / "tmp_tags.json"
+    with open(tags_file_path, "w") as tags_file:
         json.dump(tags_data, tags_file, indent=2)
-    logger.info(f"Generated tags.json with {len(tags_data)} tags")
+    logger.info(f"Generated tags.json with {len(tags_data)} tags at {tags_file_path}")
 
     # Write pre-processed tag-categories.json to reduce JS processing
-    with open("docs/_data/tmp_tag-categories.json", "w") as categories_file:
+    categories_file_path = output_data_dir / "tmp_tag-categories.json"
+    with open(categories_file_path, "w") as categories_file:
         json.dump(filtered_categories, categories_file, indent=2)
-    logger.info(f"Generated tag-categories.json with {len(filtered_categories)} categories")
+    logger.info(f"Generated tag-categories.json with {len(filtered_categories)} categories at {categories_file_path}")
 
 
 if __name__ in {"__main__", "<run_path>"}:

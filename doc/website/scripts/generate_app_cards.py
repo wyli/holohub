@@ -30,30 +30,12 @@ from common_utils import (  # noqa: E402
     get_git_root,
     logger,
     parse_metadata_file,
+    find_readme_path,
+    find_app_pairs,
 )
 
 OUTPUT_FILE = "doc/website/docs/_data/app_cards.json"
-
-
-def find_readme_path(app_dir, git_repo_path):
-    """Find the README.md file for an application."""
-    readme_paths = [
-        app_dir / "README.md",
-        app_dir / "python" / "README.md",
-        app_dir / "cpp" / "README.md",
-    ]
-    # Also check parent directories up to a limit
-    parent_dir = app_dir
-    for _ in range(3):  # Maximum depth to search up
-        if parent_dir.name == "applications" or parent_dir == git_repo_path:
-            break
-        parent_dir = parent_dir.parent
-        readme_paths.append(parent_dir / "README.md")
-
-    for path in readme_paths:
-        if path.exists():
-            return path
-    return None
+COMPONENT_TYPES = ["applications"]
 
 
 def get_app_url(readme_path, git_repo_path):
@@ -68,42 +50,29 @@ def get_app_url(readme_path, git_repo_path):
 def generate_app_cards():
     """Generate app cards data for all applications."""
     git_repo_path = get_git_root()
-    app_dir = git_repo_path / "applications"
 
-    # Load tags data
-    tags_path = git_repo_path / "doc/website/docs/_data/tmp_tags.json"
-    try:
-        with open(tags_path, 'r') as f:
-            tags_data = json.load(f)
-    except Exception as e:
-        logger.error(f"Error loading tags data: {e}")
-        tags_data = {}
+    # Find all valid app pairs (metadata.json and README.md)
+    app_pairs = find_app_pairs(git_repo_path, COMPONENT_TYPES)
+    logger.info(f"Found {len(app_pairs)} valid application pairs")
 
     app_cards = {}
 
-    # Process applications directory
-    for app_path in app_dir.iterdir():
-        if not app_path.is_dir() or app_path.name.startswith('.'):
-            continue
+    # Process each application pair
+    for app_id, (metadata_path, readme_path) in app_pairs.items():
+        # Extract app name from the app_id
+        app_name = app_id.split('/')[-1]
+        logger.info(f"Processing app: {app_name} from {app_id}")
 
-        app_name = app_path.name
-        logger.info(f"Processing app: {app_name}")
+        # Parse metadata
+        metadata, _ = parse_metadata_file(metadata_path)
 
-        # Find metadata
-        metadata_path = app_path / "metadata.json"
-        metadata = None
-        if metadata_path.exists():
-            metadata, _ = parse_metadata_file(metadata_path)
-
-        # Find README
-        readme_path = find_readme_path(app_path, git_repo_path)
+        # Read README content
         readme_content = None
-        if readme_path:
-            try:
-                with open(readme_path, 'r') as f:
-                    readme_content = f.read()
-            except Exception as e:
-                logger.error(f"Error reading README for {app_name}: {e}")
+        try:
+            with open(readme_path, 'r') as f:
+                readme_content = f.read()
+        except Exception as e:
+            logger.error(f"Error reading README for {app_name}: {e}")
 
         # Extract description
         description = None
@@ -123,7 +92,6 @@ def generate_app_cards():
                 image_url = get_full_image_url(image_path, readme_path)
                 logger.info(f"Found image for {app_name}: {image_url}")
 
-        # Get proper name from metadata
         proper_name = metadata.get("name", app_name) if metadata else app_name
 
         # Split into vendor and app title

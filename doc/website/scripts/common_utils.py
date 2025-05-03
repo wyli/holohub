@@ -23,6 +23,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
+from typing import Dict, List, Tuple, Set
 
 import markdown
 import requests
@@ -327,3 +328,183 @@ def extract_first_sentences(readme_text, num_sentences=3, max_chars=160):
         result = result[: max_chars - 3].rstrip() + "..."
 
     return result
+
+
+def find_readme_path(app_dir, git_repo_path):
+    """Find the README.md file for an application."""
+    readme_paths = [
+        app_dir / "README.md",
+        app_dir / "python" / "README.md",
+        app_dir / "cpp" / "README.md",
+    ]
+    # Also check parent directories up to a limit
+    parent_dir = app_dir
+    for _ in range(3):  # Maximum depth to search up
+        if parent_dir.name == "applications" or parent_dir == git_repo_path:
+            break
+        parent_dir = parent_dir.parent
+        readme_paths.append(parent_dir / "README.md")
+
+    for path in readme_paths:
+        if path.exists():
+            return path
+    return None
+
+
+def find_app_pairs(git_repo_path: Path, component_types: List[str] = ["applications"]) -> Dict[str, Tuple[Path, Path]]:
+    """
+    Find valid application pairs with both metadata.json and README.md files.
+    When a metadata or README is missing, try to find its most similar sister.
+
+    Args:
+        git_repo_path: Path to the git repository root
+        component_types: List of component directories to search (default: ["applications"])
+
+    Returns:
+        Dict mapping app_id to tuple of (metadata_path, readme_path)
+    """
+    # Find all metadata.json files
+    metadata_files = {}
+    readme_files = {}
+
+    for component_type in component_types:
+        component_dir = git_repo_path / component_type
+        if not component_dir.exists():
+            logger.warning(f"Component directory not found: {component_dir}")
+            continue
+
+        # Collect all metadata.json files
+        for metadata_path in component_dir.rglob("metadata.json"):
+            # Skip templates with {{ in the name
+            if "{{" in str(metadata_path):
+                continue
+
+            # Skip specific excluded paths
+            if any(t in str(metadata_path) for t in ("data_writer", "operator", "xr_hello_holoscan")):
+                continue
+
+            # Get app identifier from path
+            app_id = get_app_id_from_path(metadata_path, git_repo_path)
+            metadata_files[app_id] = metadata_path
+
+        # Collect all README.md files
+        for readme_path in component_dir.rglob("README.md"):
+            # Skip templates with {{ in the name
+            if "{{" in str(readme_path):
+                continue
+
+            # Get app identifier from path
+            app_id = get_app_id_from_path(readme_path, git_repo_path)
+            readme_files[app_id] = readme_path
+
+    # Match metadata with readmes
+    app_pairs = {}
+
+    # First, handle direct matches (both metadata and readme exist with same app_id)
+    exact_matches = set(metadata_files.keys()).intersection(set(readme_files.keys()))
+    for app_id in exact_matches:
+        app_pairs[app_id] = (metadata_files[app_id], readme_files[app_id])
+
+    # Handle orphaned metadata files (no matching README)
+    orphaned_metadata = set(metadata_files.keys()) - exact_matches
+    for app_id in orphaned_metadata:
+        # Find the closest README file
+        closest_readme = find_closest_file(app_id, readme_files)
+        if closest_readme:
+            # Create a new entry with the metadata and the closest README
+            app_pairs[app_id] = (metadata_files[app_id], readme_files[closest_readme])
+            logger.info(f"Orphaned metadata paired: {app_id} with README from {closest_readme}")
+
+    # Handle orphaned README files (no matching metadata)
+    orphaned_readme = set(readme_files.keys()) - exact_matches
+    for app_id in orphaned_readme:
+        # Only process if this README hasn't already been paired with an orphaned metadata
+        if not any(app_pairs[m][1] == readme_files[app_id] for m in orphaned_metadata if m in app_pairs):
+            # Find the closest metadata file
+            closest_metadata = find_closest_file(app_id, metadata_files)
+            if closest_metadata:
+                # Create a new entry with the closest metadata and the README
+                app_pairs[app_id] = (metadata_files[closest_metadata], readme_files[app_id])
+                logger.info(f"Orphaned README paired: {app_id} with metadata from {closest_metadata}")
+
+    return app_pairs
+
+
+def get_app_id_from_path(file_path: Path, git_repo_path: Path) -> str:
+    """
+    Generate a unique app identifier from a file path.
+    Handles common path patterns for applications.
+
+    Args:
+        file_path: Path to the metadata.json or README.md file
+        git_repo_path: Path to the git repository root
+
+    Returns:
+        String identifier for the application
+    """
+    rel_path = file_path.relative_to(git_repo_path)
+    parts = list(rel_path.parts)
+
+    # Remove the filename
+    parts.pop()
+
+    # Generate an app_id that represents the directory structure
+    return "/".join(parts)
+
+
+def find_closest_file(app_id: str, available_files: Dict[str, Path]) -> str:
+    """
+    Find the closest matching file from the available files.
+    Uses path similarity to determine the closest match.
+
+    Args:
+        app_id: The app ID to find a match for
+        available_files: Dictionary of app_id -> file_path
+
+    Returns:
+        Closest matching app_id or None if no match found
+    """
+    if not available_files:
+        return None
+
+    # Split the app_id into parts
+    parts = app_id.split("/")
+
+    # Try different matching strategies in order of preference
+
+    # 1. Direct parent directory
+    if len(parts) > 1:
+        parent_id = "/".join(parts[:-1])
+        if parent_id in available_files:
+            return parent_id
+
+    # 2. Same parent, different variant (python/cpp)
+    if len(parts) > 1:
+        parent = parts[:-1]
+        siblings = [aid for aid in available_files if aid.startswith("/".join(parent) + "/")]
+
+        if siblings:
+            # Return the first sibling (could be improved to find the most similar)
+            return siblings[0]
+
+    # 3. Most common path components
+    best_match = None
+    best_score = -1
+
+    for other_id in available_files:
+        other_parts = other_id.split("/")
+        # Count common parts from the beginning
+        common = 0
+        for i in range(min(len(parts), len(other_parts))):
+            if parts[i] == other_parts[i]:
+                common += 1
+            else:
+                break
+
+        # Score based on common parts and total length difference
+        score = common - 0.1 * abs(len(parts) - len(other_parts))
+        if score > best_score:
+            best_score = score
+            best_match = other_id
+
+    return best_match
