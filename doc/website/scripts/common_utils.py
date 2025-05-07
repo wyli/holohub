@@ -22,11 +22,10 @@ import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Tuple
 from urllib.parse import urljoin
-from typing import Dict, List, Tuple, Set
 
 import markdown
-import requests
 from bs4 import BeautifulSoup
 
 # Set up logging
@@ -82,6 +81,37 @@ RANKING_LEVELS = {
     4: "Level 4 - Experimental",
     5: "Level 5 - Obsolete",
 }
+
+# Category title mapping for proper capitalization
+CATEGORY_TITLE_MAPPING = {
+    "healthcare ai": "Healthcare AI",
+    "computer vision and perception": "Computer Vision",
+    "natural language and conversational ai": "NLP & Conversational",
+    "networking and distributed computing": "Networking",
+    "signal processing": "Signal Processing",
+    "tools and other specialized applications": "Specialized Tools",
+    "extended reality": "Extended Reality",
+    "visualization": "Visualization",
+}
+
+CATEGORY_ICONS = {
+    "Healthcare AI": "medical_services",
+    "Computer Vision": "visibility",
+    "NLP & Conversational": "chat",
+    "Networking": "hub",
+    "Signal Processing": "radar",
+    "Specialized Tools": "tune",
+    "Extended Reality": "view_in_ar",
+    "visualization": "auto_awesome_motion"
+}
+
+
+def format_category_title(title):
+    """Format a category title with proper capitalization."""
+    lower_title = title.lower()
+    if lower_title in CATEGORY_TITLE_MAPPING:
+        return CATEGORY_TITLE_MAPPING[lower_title]
+    return title.title()
 
 
 def get_git_root() -> Path:
@@ -351,7 +381,9 @@ def find_readme_path(app_dir, git_repo_path):
     return None
 
 
-def find_app_pairs(git_repo_path: Path, component_types: List[str] = ["applications"]) -> Dict[str, Tuple[Path, Path]]:
+def find_app_pairs(
+    git_repo_path: Path, component_types: List[str] = ["applications"]
+) -> Dict[str, Tuple[Path, Path]]:
     """
     Find valid application pairs with both metadata.json and README.md files.
     When a metadata or README is missing, try to find its most similar sister.
@@ -380,7 +412,9 @@ def find_app_pairs(git_repo_path: Path, component_types: List[str] = ["applicati
                 continue
 
             # Skip specific excluded paths
-            if any(t in str(metadata_path) for t in ("data_writer", "operator", "xr_hello_holoscan")):
+            if any(
+                t in str(metadata_path) for t in ("data_writer", "operator", "xr_hello_holoscan")
+            ):
                 continue
 
             # Get app identifier from path
@@ -419,13 +453,17 @@ def find_app_pairs(git_repo_path: Path, component_types: List[str] = ["applicati
     orphaned_readme = set(readme_files.keys()) - exact_matches
     for app_id in orphaned_readme:
         # Only process if this README hasn't already been paired with an orphaned metadata
-        if not any(app_pairs[m][1] == readme_files[app_id] for m in orphaned_metadata if m in app_pairs):
+        if not any(
+            app_pairs[m][1] == readme_files[app_id] for m in orphaned_metadata if m in app_pairs
+        ):
             # Find the closest metadata file
             closest_metadata = find_closest_file(app_id, metadata_files)
             if closest_metadata:
                 # Create a new entry with the closest metadata and the README
                 app_pairs[app_id] = (metadata_files[closest_metadata], readme_files[app_id])
-                logger.info(f"Orphaned README paired: {app_id} with metadata from {closest_metadata}")
+                logger.info(
+                    f"Orphaned README paired: {app_id} with metadata from {closest_metadata}"
+                )
 
     return app_pairs
 

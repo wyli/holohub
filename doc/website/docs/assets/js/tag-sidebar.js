@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       try {
         const [categoriesResponse, appCardsResponse] = await Promise.all([
           fetch(`${dataPath}tmp_tag-categories.json`),
-          fetch(`${dataPath}app_cards.json`)
+          fetch(`${dataPath}tmp_app_cards.json`)
         ]);
 
         if (!categoriesResponse.ok) {
@@ -228,8 +228,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const categoryList = document.createElement('ul');
     categoryList.className = 'tag-category-list md-nav__list';
     const primaryCategories = categories
-      .filter(cat => cat.isPrimary)
-      .sort((a, b) => a.title.localeCompare(b.title));
     console.log("Primary categories:", primaryCategories.length);
 
     // Build the tags page URL with the correct base path
