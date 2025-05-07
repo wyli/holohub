@@ -539,7 +539,7 @@ async function loadCategoryContent(category) {
       return;
     }
 
-    renderCategoryContent(cardsContainer, matchingCategory, appCardsData, category);
+    renderCategoryContent(cardsContainer, matchingCategory, appCardsData);
   } catch (error) {
     console.error('Error loading category content:', error);
     const cardsContainer = document.querySelector('.category-cards');
@@ -556,7 +556,7 @@ async function loadCategoryContent(category) {
 }
 
 // Function to render category content
-function renderCategoryContent(container, matchingCategory, appCardsData, category) {
+function renderCategoryContent(container, matchingCategory, appCardsData) {
   // Filter apps based on the matching category title
   const categoryLower = matchingCategory.title.toLowerCase();
   const filteredApps = filterAppsByCategory(appCardsData, categoryLower);
@@ -682,18 +682,19 @@ function createAppCard(appName, tags, cardData, baseUrl) {
 
 // Function to filter apps by category
 function filterAppsByCategory(appCardsData, categoryLower) {
+  // Find the category in the categories data
+  const categories = window.tagSidebarData.categories;
+  const matchingCategory = categories.find(cat =>
+    cat.title.toLowerCase() === categoryLower
+  );
+  if (!matchingCategory || !matchingCategory.ids) {
+    return [];
+  }
+  const categoryIds = matchingCategory.ids.map(id => id.toLowerCase());
   return Object.entries(appCardsData)
-    .filter(([_, appData]) => {
-      const tags = appData.tags;
-      if (!tags || !tags.length) return false;
-      return tags.some(tag => {
-        const tagLower = tag.toLowerCase();
-        return tagLower === categoryLower ||
-              tagLower.includes(categoryLower) ||
-              (categoryLower === 'networking' && tagLower.includes('networking and distributed computing')) ||
-              (categoryLower === 'nlp & conversational' && tagLower.includes('natural language and conversational ai')) ||
-              (categoryLower === 'computer vision' && tagLower.includes('computer vision and perception'));
-      });
+    .filter(([appName, appData]) => {
+      const appTitle = (appData.app_title || appName).toLowerCase();
+      return categoryIds.some(id => appTitle === id || appTitle.includes(id) || id.includes(appTitle));
     });
 }
 

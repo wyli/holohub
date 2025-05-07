@@ -407,14 +407,9 @@ def find_app_pairs(
 
         # Collect all metadata.json files
         for metadata_path in component_dir.rglob("metadata.json"):
-            # Skip templates with {{ in the name
-            if "{{" in str(metadata_path):
-                continue
-
             # Skip specific excluded paths
-            if any(
-                t in str(metadata_path) for t in ("data_writer", "operator", "xr_hello_holoscan")
-            ):
+            keywords = ["data_writer", "operator", "xr_hello_holoscan", "template", "{{"]
+            if any(t in str(metadata_path) for t in keywords):
                 continue
 
             # Get app identifier from path
@@ -423,8 +418,9 @@ def find_app_pairs(
 
         # Collect all README.md files
         for readme_path in component_dir.rglob("README.md"):
-            # Skip templates with {{ in the name
-            if "{{" in str(readme_path):
+            # Skip specific excluded paths
+            keywords = ["data_writer", "operator", "xr_hello_holoscan", "template", "{{"]
+            if any(t in str(readme_path) for t in keywords):
                 continue
 
             # Get app identifier from path
@@ -438,6 +434,7 @@ def find_app_pairs(
     exact_matches = set(metadata_files.keys()).intersection(set(readme_files.keys()))
     for app_id in exact_matches:
         app_pairs[app_id] = (metadata_files[app_id], readme_files[app_id])
+    logger.info(f"Exact matches (len: {len(exact_matches)}): {exact_matches}")
 
     # Handle orphaned metadata files (no matching README)
     orphaned_metadata = set(metadata_files.keys()) - exact_matches
@@ -448,22 +445,6 @@ def find_app_pairs(
             # Create a new entry with the metadata and the closest README
             app_pairs[app_id] = (metadata_files[app_id], readme_files[closest_readme])
             logger.info(f"Orphaned metadata paired: {app_id} with README from {closest_readme}")
-
-    # Handle orphaned README files (no matching metadata)
-    orphaned_readme = set(readme_files.keys()) - exact_matches
-    for app_id in orphaned_readme:
-        # Only process if this README hasn't already been paired with an orphaned metadata
-        if not any(
-            app_pairs[m][1] == readme_files[app_id] for m in orphaned_metadata if m in app_pairs
-        ):
-            # Find the closest metadata file
-            closest_metadata = find_closest_file(app_id, metadata_files)
-            if closest_metadata:
-                # Create a new entry with the closest metadata and the README
-                app_pairs[app_id] = (metadata_files[closest_metadata], readme_files[app_id])
-                logger.info(
-                    f"Orphaned README paired: {app_id} with metadata from {closest_metadata}"
-                )
 
     return app_pairs
 

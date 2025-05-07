@@ -60,10 +60,14 @@ def generate_tags_json() -> None:
             logger.error(f"Failed to process {metadata_path}: {e}")
 
     category_counts = Counter()
+    cat_apps = {}
     for category in main_categories:
-        for _, tags in app_tags.items():
+        for app_title, tags in app_tags.items():
             if format_category_title(tags[0]) == category:
                 category_counts[category] += 1
+                if category not in cat_apps:
+                    cat_apps[category] = []
+                cat_apps[category].append(app_title)
 
     tag_categories = []
     for category in sorted(main_categories):
@@ -71,6 +75,7 @@ def generate_tags_json() -> None:
             "title": category,
             "count": category_counts[category],
             "icon": CATEGORY_ICONS[category],
+            "ids": cat_apps[category],
         }
         tag_categories.append(category_data)
 
