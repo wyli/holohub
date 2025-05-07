@@ -117,22 +117,25 @@
 
 /* When the sidebar is standalone (not in Material's sidebar) */
 .md-main__inner > .tag-sidebar {
+  position: fixed;
   width: 14rem;
   background-color: var(--md-default-bg-color);
   border-right: 1px solid var(--md-default-fg-color--lightest);
   padding: 1rem 0;
   font-size: 0.8rem;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  padding-top: 4.8rem; /* Space for the top navigation */
+  height: calc(100vh - 4.8rem); /* Subtract header height */
+  top: 4.8rem; /* Space for the top navigation */
+  left: 0;
   overflow-y: auto;
   z-index: 1;
+  box-shadow: 0 0 0.6rem rgba(0,0,0,.05);
 }
 
 /* When the sidebar is standalone, adjust the main content */
 .md-main__inner > .tag-sidebar ~ .md-content {
   margin-left: 14rem;
+  width: calc(100% - 14rem);
+  max-width: none;
 }
 
 /* Style tags on the applications page */
@@ -181,6 +184,12 @@
 
   [data-md-toggle=drawer]:checked ~ .md-container .tag-sidebar.md-sidebar {
     transform: translateX(0);
+  }
+
+  /* Reset main content margin on mobile */
+  .md-main__inner > .tag-sidebar ~ .md-content {
+    margin-left: 0;
+    width: 100%;
   }
 }
 

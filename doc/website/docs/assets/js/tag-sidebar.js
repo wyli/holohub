@@ -128,15 +128,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
       }
 
+      // Create a wrapper for the sidebar
+      const sidebarWrapper = document.createElement('div');
+      sidebarWrapper.className = 'tag-sidebar-wrapper';
+      sidebarWrapper.style.position = 'relative';
+
       tagSidebar = document.createElement('div');
       tagSidebar.className = 'tag-sidebar md-sidebar md-sidebar--primary';
 
       // Insert as first child
       if (mainInner.firstChild) {
-        mainInner.insertBefore(tagSidebar, mainInner.firstChild);
+        mainInner.insertBefore(sidebarWrapper, mainInner.firstChild);
       } else {
-        mainInner.appendChild(tagSidebar);
+        mainInner.appendChild(sidebarWrapper);
       }
+      sidebarWrapper.appendChild(tagSidebar);
       console.log("Created standalone sidebar");
     }
 
@@ -231,6 +237,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         loadCategoryContent(categoryParam);
         highlightActiveCategory(categoryParam);
       }
+    });
+
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        // Update sidebar height on resize
+        const sidebar = document.querySelector('.tag-sidebar.md-sidebar');
+        if (sidebar) {
+          sidebar.style.height = `calc(100vh - ${document.querySelector('.md-header').offsetHeight}px)`;
+        }
+      }, 100);
     });
 
     console.log("Tag sidebar ready");

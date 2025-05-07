@@ -17,6 +17,12 @@ title: Applications by Category
 
 <style>
 /* Category Section Styles */
+.category-content {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+}
+
 .category-section {
   margin-bottom: 3rem;
 }
@@ -178,6 +184,37 @@ title: Applications by Category
 
 .category-title {
   margin-bottom: 2rem;
+}
+
+/* Loading indicator */
+.loading-message {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--md-default-fg-color--light);
+}
+
+.category-content.loading {
+  position: relative;
+}
+
+.category-content.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 3px solid var(--md-default-fg-color--lightest);
+  border-top-color: var(--md-accent-fg-color);
+  border-radius: 50%;
+  animation: loading-spinner 0.8s linear infinite;
+  z-index: 10;
+}
+
+@keyframes loading-spinner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
 
