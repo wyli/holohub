@@ -204,31 +204,57 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const searchQuery = urlParams.get('category');
 
-    // Load both tag data and tag categories data
-    const [tagsResponse, categoriesResponse] = await Promise.all([
+    // Try to use already loaded data from the sidebar
+    if (!window.tagSidebarData) {
+      // Initialize the data cache if it doesn't exist yet
+      window.tagSidebarData = {
+        categories: null,
+        tagsData: null,
+        appCardsData: null,
+        isLoading: false
+      };
+
+      // Load the data
+      try {
+        window.tagSidebarData.isLoading = true;
+
+        // Load all data in parallel
+        const [tagsResponse, categoriesResponse, appCardsResponse] = await Promise.all([
       fetch(`${dataPath}tmp_tags.json`),
-      fetch(`${dataPath}tmp_tag-categories.json`)
+          fetch(`${dataPath}tmp_tag-categories.json`),
+          fetch(`${dataPath}app_cards.json`).catch(() => ({ ok: false })) // Optional data
     ]);
 
     if (!tagsResponse.ok || !categoriesResponse.ok) {
       throw new Error(`Failed to fetch data: ${tagsResponse.status}, ${categoriesResponse.status}`);
     }
 
-    const tagsData = await tagsResponse.json();
-    const categoriesData = await categoriesResponse.json();
+        window.tagSidebarData.tagsData = await tagsResponse.json();
+        window.tagSidebarData.categories = await categoriesResponse.json();
 
-    // Try to load pre-generated app cards data if available
-    let appCardsData = {};
-    try {
-      const appCardsResponse = await fetch(`${dataPath}app_cards.json`);
+        // Load app cards data if available
       if (appCardsResponse.ok) {
-        appCardsData = await appCardsResponse.json();
-        console.log('App cards data loaded successfully', Object.keys(appCardsData).length, 'entries');
+          window.tagSidebarData.appCardsData = await appCardsResponse.json();
+          console.log('App cards data loaded successfully', Object.keys(window.tagSidebarData.appCardsData).length, 'entries');
       } else {
         console.log('App cards data not available, using fallback');
       }
     } catch (error) {
-      console.log('Error loading app cards data, using fallback:', error.message);
+        console.error('Error loading data:', error.message);
+      } finally {
+        window.tagSidebarData.isLoading = false;
+      }
+    }
+
+    // Access the cached data
+    const tagsData = window.tagSidebarData.tagsData;
+    const categoriesData = window.tagSidebarData.categories;
+    const appCardsData = window.tagSidebarData.appCardsData || {};
+
+    if (!tagsData || !categoriesData) {
+      document.querySelector('.category-cards').innerHTML =
+        '<p>Error loading data. Please try refreshing the page.</p>';
+      return;
     }
 
     if (searchQuery) {
@@ -279,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
           const categoryHeader = document.createElement('div');
           categoryHeader.className = 'category-header';
-          categoryHeader.innerHTML = `<h2>${matchingCategory.title}</h2>`;
+          categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
 
           categorySection.appendChild(categoryHeader);
           cardsContainer.appendChild(categorySection);
@@ -301,22 +327,19 @@ document.addEventListener('DOMContentLoaded', async function() {
           // Check for direct match with the exact appName
           if (appCardsData[appName]) {
             cardData = appCardsData[appName];
-            console.log(`Found direct match for ${appName}`);
           }
           // If not found, try with just the simple name
           else if (simpleName && appCardsData[simpleName]) {
             cardData = appCardsData[simpleName];
-            console.log(`Found match using simple name: ${simpleName}`);
           }
           // If still not found, try to match app_title
           else {
             const matchedCard = Object.values(appCardsData).find(
-              card => card.app_title === appName || card.app_title === simpleName
+              card => card && (card.app_title === appName || card.app_title === simpleName)
             );
 
             if (matchedCard) {
               cardData = matchedCard;
-              console.log(`Found match by app_title: ${matchedCard.app_title}`);
             } else {
               // If still no match, use fallback
               const defaultAppTitle = simpleName || appName;
@@ -328,7 +351,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 app_title: defaultAppTitle,
                 app_url: `applications/${defaultAppTitle}/`
               };
-              console.log(`Using fallback for ${appName}`);
             }
           }
 
@@ -408,7 +430,6 @@ document.addEventListener('DOMContentLoaded', async function() {
           card.appendChild(details);
 
           // Ensure the app_url has the proper structure for navigation
-          // If it doesn't start with 'applications/', add it
           let appUrl = cardData.app_url || '';
           if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
             appUrl = `applications/${appUrl}`;
@@ -418,9 +439,6 @@ document.addEventListener('DOMContentLoaded', async function() {
           if (!appUrl.endsWith('/')) {
             appUrl += '/';
           }
-
-          // Debug URL construction
-          console.log(`Card URL for ${cardData.app_title}: ${baseUrl}${appUrl}`);
 
           // Make the card clickable with the constructed URL
           card.addEventListener('click', function() {

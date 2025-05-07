@@ -46,10 +46,19 @@
   color: var(--md-typeset-color);
   position: relative;
   font-weight: 500;
+  border-radius: 4px;
+  padding-left: 0.4rem;
+  transition: background-color 0.2s ease;
 }
 
 .tag-category-header:hover {
   color: var(--md-accent-fg-color);
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+.tag-category-header.active {
+  color: var(--md-accent-fg-color);
+  background-color: var(--md-default-fg-color--lightest);
 }
 
 .tag-category-icon {
@@ -209,19 +218,35 @@
 }
 
 /* Loading indicator */
-.loading::after {
+.loading-message {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--md-default-fg-color--light);
+}
+
+.category-content.loading {
+  position: relative;
+}
+
+.category-content.loading::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
   border: 3px solid var(--md-default-fg-color--lightest);
   border-top-color: var(--md-accent-fg-color);
   border-radius: 50%;
   animation: loading-spinner 0.8s linear infinite;
   z-index: 10;
+}
+
+.category-title {
+  margin-bottom: 2rem;
+  color: var(--md-default-fg-color);
+  font-weight: 600;
 }
 
 @keyframes loading-spinner {
@@ -232,4 +257,44 @@
 /* Prevent height jump during content loading */
 .md-content {
   min-height: 60vh;
+}
+
+/* Additional Card Styles */
+.app-card {
+  transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out, border-color 0.25s ease-in-out;
+}
+
+.app-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-color: var(--md-accent-fg-color--transparent);
+}
+
+.app-thumbnail {
+  position: relative;
+  overflow: hidden;
+}
+
+.app-thumbnail::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.15) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.app-card:hover .app-thumbnail::after {
+  opacity: 1;
+}
+
+.image-placeholder {
+  transition: transform 0.3s ease;
+}
+
+.app-card:hover .image-placeholder {
+  transform: scale(1.05);
 }
