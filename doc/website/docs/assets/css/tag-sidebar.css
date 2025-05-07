@@ -6,7 +6,6 @@
   --tag-sidebar-font-size: 0.7rem;
   --tag-sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --tag-sidebar-shadow: 0 0 0.6rem rgba(0,0,0,.05);
-  --tag-sidebar-border: 1px solid var(--md-default-fg-color--lightest);
 }
 
 /* Tag Sidebar Layout */
@@ -14,7 +13,6 @@
   font-size: var(--tag-sidebar-font-size);
   padding: var(--tag-sidebar-padding) 0;
   margin-top: 1rem;
-  border-top: var(--tag-sidebar-border);
   display: block !important;
 }
 
@@ -35,7 +33,6 @@
   color: var(--md-default-fg-color);
   font-weight: 700;
   padding-bottom: 0.4rem;
-  border-bottom: var(--tag-sidebar-border);
 }
 
 /* Tag Categories */

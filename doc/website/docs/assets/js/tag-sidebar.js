@@ -1,42 +1,32 @@
-// Tag-based sidebar navigation
+function getBaseUrl() {
+  const baseTag = document.querySelector('base');
+  if (baseTag && baseTag.href) {
+    return new URL(baseTag.href).pathname;
+  }
+  const pathParts = window.location.pathname.split('/');
+  if (pathParts.length > 2 && pathParts[1] === 'holohub') {
+    return '/holohub/';
+  }
+  return '';
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   console.log("Tag sidebar script loading...");
-
   try {
-    // Get the base URL from the <base> tag if available, or infer from path
-    let baseUrl = '';
-    const baseTag = document.querySelector('base');
-    if (baseTag && baseTag.href) {
-      baseUrl = new URL(baseTag.href).pathname;
-    } else {
-      // Handle /holohub/ or other base paths
-      const pathParts = window.location.pathname.split('/');
-      if (pathParts.length > 2 && pathParts[1] === 'holohub') {
-        baseUrl = '/holohub/';
-      }
-    }
-
-    // Function to handle tag clicks - fill search box with tag content
+    // Get the base URL
+    const baseUrl = getBaseUrl();
     window.handleTagClick = function(tag) {
-      // Get the search input element from Material-mkdocs
       const searchInput = document.querySelector('.md-search__input');
       if (searchInput) {
-        // Focus the search input
         searchInput.focus();
-
-        // Set the value to the tag content
         searchInput.value = tag;
-
-        // Dispatch input event to trigger search
         searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-        // If the search box is in a closed state, we need to toggle it open
         const searchButton = document.querySelector('[data-md-toggle="search"]');
         if (searchButton && !searchButton.checked) {
           searchButton.checked = true;
         }
       }
-      return false; // Prevent default behavior and bubbling
+      return false;
     };
 
     // Create a popup for displaying all tags
@@ -44,6 +34,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     tagsPopup.className = 'tags-popup';
     tagsPopup.style.display = 'none';
     document.body.appendChild(tagsPopup);
+
+    // Check if we're on the tags page
+    const isTagsPage = window.location.pathname.endsWith('/tags/') ||
+                      window.location.pathname.endsWith('/tags') ||
+                      window.location.pathname.includes('/tags/index');
 
     // Add click event handler to close popup when clicking outside
     document.addEventListener('click', function(e) {
@@ -340,9 +335,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Check if URL has a category parameter and load that content
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
+
+    // If we're on the tags page or have a category parameter, load the content
     if (categoryParam) {
       // Highlight the active category in the sidebar
       highlightActiveCategory(categoryParam);
+
+      // If on the tags page, load the category content
+      if (isTagsPage) {
+        loadCategoryContent(categoryParam);
+      }
+    } else if (isTagsPage) {
+      // If on tags page without category, show initial message
+      const filterMessage = document.querySelector('.category-filter-message');
+      const resultsSection = document.querySelector('.category-results');
+
+      if (filterMessage && resultsSection) {
+        filterMessage.style.display = 'block';
+        resultsSection.style.display = 'none';
+      }
     }
 
     // Handle browser back/forward navigation
@@ -351,6 +362,20 @@ document.addEventListener('DOMContentLoaded', async function() {
       const categoryParam = urlParams.get('category');
       if (categoryParam) {
         highlightActiveCategory(categoryParam);
+
+        // If on the tags page, also load the content
+        if (isTagsPage) {
+          loadCategoryContent(categoryParam);
+        }
+      } else if (isTagsPage) {
+        // Reset to initial state if no category
+        const filterMessage = document.querySelector('.category-filter-message');
+        const resultsSection = document.querySelector('.category-results');
+
+        if (filterMessage && resultsSection) {
+          filterMessage.style.display = 'block';
+          resultsSection.style.display = 'none';
+        }
       }
     });
 
@@ -371,6 +396,137 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   } catch (error) {
     console.error('Error loading tag sidebar:', error);
+  }
+});
+
+// Second event listener for handling category pages
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    // Get the base URL
+    const baseUrl = getBaseUrl();
+
+    // Determine path to _data directory
+    let dataPath = `${baseUrl}_data/`;
+
+    // Get the search query from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('category');
+
+    // Try to use already loaded data from the sidebar
+    if (!window.tagSidebarData) {
+      // Initialize the data cache if it doesn't exist yet
+      window.tagSidebarData = {
+        categories: null,
+        tagsData: null,
+        appCardsData: null,
+        isLoading: false
+      };
+
+      // Load the data
+      try {
+        window.tagSidebarData.isLoading = true;
+
+        // Load all data in parallel
+        const [tagsResponse, categoriesResponse, appCardsResponse] = await Promise.all([
+          fetch(`${dataPath}tmp_tags.json`),
+          fetch(`${dataPath}tmp_tag-categories.json`),
+          fetch(`${dataPath}app_cards.json`).catch(() => ({ ok: false })) // Optional data
+        ]);
+
+        if (!tagsResponse.ok || !categoriesResponse.ok) {
+          throw new Error(`Failed to fetch data: ${tagsResponse.status}, ${categoriesResponse.status}`);
+        }
+
+        window.tagSidebarData.tagsData = await tagsResponse.json();
+        window.tagSidebarData.categories = await categoriesResponse.json();
+
+        // Load app cards data if available
+        if (appCardsResponse.ok) {
+          window.tagSidebarData.appCardsData = await appCardsResponse.json();
+          console.log('App cards data loaded successfully', Object.keys(window.tagSidebarData.appCardsData).length, 'entries');
+        } else {
+          console.log('App cards data not available, using fallback');
+        }
+      } catch (error) {
+        console.error('Error loading data:', error.message);
+      } finally {
+        window.tagSidebarData.isLoading = false;
+      }
+    }
+
+    // Access the cached data
+    const tagsData = window.tagSidebarData.tagsData;
+    const categoriesData = window.tagSidebarData.categories;
+    const appCardsData = window.tagSidebarData.appCardsData || {};
+
+    if (!tagsData || !categoriesData) {
+      document.querySelector('.category-cards').innerHTML =
+        '<p>Error loading data. Please try refreshing the page.</p>';
+      return;
+    }
+
+    if (searchQuery) {
+      // Display the query
+      document.querySelector('.category-filter-message').style.display = 'none';
+      document.querySelector('.category-results').style.display = 'block';
+
+      // Find matching category in categoriesData first
+      const searchQueryLower = searchQuery.toLowerCase();
+      const matchingCategory = categoriesData.find(category =>
+        category.title.toLowerCase() === searchQueryLower
+      );
+
+      if (!matchingCategory) {
+        document.querySelector('.category-cards').innerHTML = '<p>No matching category found.</p>';
+        return;
+      }
+
+      // Filter apps based on the matching category title
+      const categoryLower = matchingCategory.title.toLowerCase();
+      const filteredApps = filterAppsByCategory(tagsData, categoryLower);
+
+      // Display the results
+      const cardsContainer = document.querySelector('.category-cards');
+
+      if (filteredApps.length === 0) {
+        cardsContainer.innerHTML = '<p>No applications found for this category.</p>';
+      } else {
+        cardsContainer.innerHTML = '';
+
+        // Add category header and description if available
+        if (matchingCategory) {
+          const categorySection = document.createElement('div');
+          categorySection.className = 'category-section';
+
+          const categoryHeader = document.createElement('div');
+          categoryHeader.className = 'category-header';
+          categoryHeader.innerHTML = `<h2 class="category-title">Applications - ${matchingCategory.title}</h2>`;
+
+          categorySection.appendChild(categoryHeader);
+          cardsContainer.appendChild(categorySection);
+        }
+
+        // Create grid for cards
+        const appGrid = document.createElement('div');
+        appGrid.className = 'app-cards';
+
+        // Sort apps alphabetically
+        filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
+
+        // Create app cards
+        filteredApps.forEach(([appName, tags]) => {
+          const cardData = getCardData(appName, tags, searchQuery, appCardsData);
+          const card = createAppCard(appName, tags, cardData, baseUrl);
+          appGrid.appendChild(card);
+        });
+
+        cardsContainer.appendChild(appGrid);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading category results:', error);
+    document.querySelector('.category-cards').innerHTML =
+      `<p>Error loading applications: ${error.message}</p>`;
   }
 });
 
@@ -492,20 +648,7 @@ async function loadCategoryContent(category) {
 
     // Filter apps based on the matching category title
     const categoryLower = matchingCategory.title.toLowerCase();
-    const filteredApps = Object.entries(tagsData)
-      .filter(([appName, tags]) => {
-        if (!tags || !tags.length) return false;
-
-        // Check if any tag matches the category
-        return tags.some(tag => {
-          const tagLower = tag.toLowerCase();
-          return tagLower === categoryLower ||
-                tagLower.includes(categoryLower) ||
-                (categoryLower === 'networking' && tagLower.includes('networking and distributed computing')) ||
-                (categoryLower === 'nlp & conversational' && tagLower.includes('natural language and conversational ai')) ||
-                (categoryLower === 'computer vision' && tagLower.includes('computer vision and perception'));
-        });
-      });
+    const filteredApps = filterAppsByCategory(tagsData, categoryLower);
 
     // Display the results
     if (filteredApps.length === 0) {
@@ -519,7 +662,7 @@ async function loadCategoryContent(category) {
 
       const categoryHeader = document.createElement('div');
       categoryHeader.className = 'category-header';
-      categoryHeader.innerHTML = `<h3 class="category-title">${matchingCategory.title}</h3>`;
+      categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
 
       categorySection.appendChild(categoryHeader);
       cardsContainer.appendChild(categorySection);
@@ -532,158 +675,12 @@ async function loadCategoryContent(category) {
       filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
 
       // Get base URL
-      let baseUrl = '';
-      const baseTag = document.querySelector('base');
-      if (baseTag && baseTag.href) {
-        baseUrl = new URL(baseTag.href).pathname;
-      } else {
-        const pathParts = window.location.pathname.split('/');
-        if (pathParts.length > 2 && pathParts[1] === 'holohub') {
-          baseUrl = '/holohub/';
-        }
-      }
+      const baseUrl = getBaseUrl();
 
       // Create app cards
       filteredApps.forEach(([appName, tags]) => {
-        // Try to find the app data by various potential keys
-        let cardData;
-        const simpleName = appName.split('/').pop(); // Extract just the application name, no path
-
-        // Check for direct match with the exact appName
-        if (appCardsData[appName]) {
-          cardData = appCardsData[appName];
-        }
-        // If not found, try with just the simple name
-        else if (simpleName && appCardsData[simpleName]) {
-          cardData = appCardsData[simpleName];
-        }
-        // If still not found, try to match app_title
-        else {
-          const matchedCard = Object.values(appCardsData).find(
-            card => card && (card.app_title === appName || card.app_title === simpleName)
-          );
-
-          if (matchedCard) {
-            cardData = matchedCard;
-          } else {
-            // If still no match, use fallback
-            const defaultAppTitle = simpleName || appName;
-            cardData = {
-              name: appName,
-              description: "Application for " + category,
-              image_url: null,
-              tags: tags,
-              app_title: defaultAppTitle,
-              app_url: `applications/${defaultAppTitle}/`
-            };
-          }
-        }
-
-        // Generate a placeholder color based on app name
-        const hash = appName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
-        const hue = Math.abs(hash) % 360;
-        const bgColor = `hsl(${hue}, 70%, 85%)`;
-
-        // Get first letter of app title for placeholder
-        const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
-
-        // Create card content with image loading logic
-        const card = document.createElement('div');
-        card.className = 'app-card';
-
-        // Create thumbnail element
-        const thumbnail = document.createElement('div');
-        thumbnail.className = 'app-thumbnail';
-
-        // Create placeholder with app initial
-        const placeholder = document.createElement('div');
-        placeholder.className = 'image-placeholder';
-        placeholder.style.backgroundColor = bgColor;
-        placeholder.textContent = appInitial;
-        thumbnail.appendChild(placeholder);
-
-        // Add image if available
-        if (cardData.image_url) {
-          const img = document.createElement('img');
-          img.src = cardData.image_url;
-          img.alt = cardData.name;
-          img.loading = 'lazy';
-          img.onload = function() {
-            thumbnail.classList.add('loaded');
-          };
-          thumbnail.appendChild(img);
-        }
-
-        // Create details section
-        const details = document.createElement('div');
-        details.className = 'app-details';
-
-        // Add title
-        const title = document.createElement('h5');
-        title.textContent = cardData.app_title;
-        details.appendChild(title);
-
-        // Add description
-        const description = document.createElement('p');
-        description.textContent = cardData.description;
-        details.appendChild(description);
-
-        // Add tags
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'app-tags';
-
-        // Add up to 3 tags
-        tags.slice(0, 3).forEach(tag => {
-          const tagSpan = document.createElement('span');
-          tagSpan.className = 'tag';
-          tagSpan.textContent = tag;
-          tagSpan.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent card click
-            window.handleTagClick(tag);
-            return false;
-          });
-          tagsContainer.appendChild(tagSpan);
-        });
-
-        // Add tag count if more than 3
-        if (tags.length > 3) {
-          const tagCount = document.createElement('span');
-          tagCount.className = 'tag-count';
-          tagCount.textContent = `+${tags.length - 3}`;
-          tagCount.setAttribute('data-tags', JSON.stringify(tags));
-          tagCount.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent card click
-            showAllTags(this, this.getAttribute('data-tags'));
-            return false;
-          });
-          tagsContainer.appendChild(tagCount);
-        }
-
-        details.appendChild(tagsContainer);
-
-        // Assemble the card
-        card.appendChild(thumbnail);
-        card.appendChild(details);
-
-        // Ensure the app_url has the proper structure for navigation
-        let appUrl = cardData.app_url || '';
-        if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
-          appUrl = `applications/${appUrl}`;
-        }
-
-        // Make sure it ends with a trailing slash for consistency
-        if (!appUrl.endsWith('/')) {
-          appUrl += '/';
-        }
-
-        // Make the card clickable with the constructed URL
-        card.addEventListener('click', function() {
-          window.location.href = `${baseUrl}${appUrl}`;
-        });
-
-        // Add hover effect
-        card.style.cursor = 'pointer';
-
+        const cardData = getCardData(appName, tags, category, appCardsData);
+        const card = createAppCard(appName, tags, cardData, baseUrl);
         appGrid.appendChild(card);
       });
 
@@ -704,302 +701,9 @@ async function loadCategoryContent(category) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-  try {
-    // Get the base URL from the <base> tag if available, or infer from path
-    let baseUrl = '';
-    const baseTag = document.querySelector('base');
-    if (baseTag && baseTag.href) {
-      baseUrl = new URL(baseTag.href).pathname;
-    } else {
-      // Handle /holohub/ or other base paths
-      const pathParts = window.location.pathname.split('/');
-      if (pathParts.length > 2 && pathParts[1] === 'holohub') {
-        baseUrl = '/holohub/';
-      }
-    }
-
-    // Determine path to _data directory
-    let dataPath = `${baseUrl}_data/`;
-
-    // Get the search query from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchQuery = urlParams.get('category');
-
-    // Try to use already loaded data from the sidebar
-    if (!window.tagSidebarData) {
-      // Initialize the data cache if it doesn't exist yet
-      window.tagSidebarData = {
-        categories: null,
-        tagsData: null,
-        appCardsData: null,
-        isLoading: false
-      };
-
-      // Load the data
-      try {
-        window.tagSidebarData.isLoading = true;
-
-        // Load all data in parallel
-        const [tagsResponse, categoriesResponse, appCardsResponse] = await Promise.all([
-      fetch(`${dataPath}tmp_tags.json`),
-          fetch(`${dataPath}tmp_tag-categories.json`),
-          fetch(`${dataPath}app_cards.json`).catch(() => ({ ok: false })) // Optional data
-    ]);
-
-    if (!tagsResponse.ok || !categoriesResponse.ok) {
-      throw new Error(`Failed to fetch data: ${tagsResponse.status}, ${categoriesResponse.status}`);
-    }
-
-        window.tagSidebarData.tagsData = await tagsResponse.json();
-        window.tagSidebarData.categories = await categoriesResponse.json();
-
-        // Load app cards data if available
-      if (appCardsResponse.ok) {
-          window.tagSidebarData.appCardsData = await appCardsResponse.json();
-          console.log('App cards data loaded successfully', Object.keys(window.tagSidebarData.appCardsData).length, 'entries');
-      } else {
-        console.log('App cards data not available, using fallback');
-      }
-    } catch (error) {
-        console.error('Error loading data:', error.message);
-      } finally {
-        window.tagSidebarData.isLoading = false;
-      }
-    }
-
-    // Access the cached data
-    const tagsData = window.tagSidebarData.tagsData;
-    const categoriesData = window.tagSidebarData.categories;
-    const appCardsData = window.tagSidebarData.appCardsData || {};
-
-    if (!tagsData || !categoriesData) {
-      document.querySelector('.category-cards').innerHTML =
-        '<p>Error loading data. Please try refreshing the page.</p>';
-      return;
-    }
-
-    if (searchQuery) {
-      // Display the query
-      document.querySelector('.category-filter-message').style.display = 'none';
-      document.querySelector('.category-results').style.display = 'block';
-
-      // Find matching category in categoriesData first
-      const searchQueryLower = searchQuery.toLowerCase();
-      const matchingCategory = categoriesData.find(category =>
-        category.title.toLowerCase() === searchQueryLower
-      );
-
-      if (!matchingCategory) {
-        document.querySelector('.category-cards').innerHTML = '<p>No matching category found.</p>';
-        return;
-      }
-
-      // Filter apps based on the matching category title
-      const categoryLower = matchingCategory.title.toLowerCase();
-      const filteredApps = Object.entries(tagsData)
-        .filter(([appName, tags]) => {
-          if (!tags || !tags.length) return false;
-
-          // Check if any tag matches the category
-          return tags.some(tag => {
-            const tagLower = tag.toLowerCase();
-            return tagLower === categoryLower ||
-                   tagLower.includes(categoryLower) ||
-                   (categoryLower === 'networking' && tagLower.includes('networking and distributed computing')) ||
-                   (categoryLower === 'nlp & conversational' && tagLower.includes('natural language and conversational ai')) ||
-                   (categoryLower === 'computer vision' && tagLower.includes('computer vision and perception'));
-          });
-        });
-
-      // Display the results
-      const cardsContainer = document.querySelector('.category-cards');
-
-      if (filteredApps.length === 0) {
-        cardsContainer.innerHTML = '<p>No applications found for this category.</p>';
-      } else {
-        cardsContainer.innerHTML = '';
-
-        // Add category header and description if available
-        if (matchingCategory) {
-          const categorySection = document.createElement('div');
-          categorySection.className = 'category-section';
-
-          const categoryHeader = document.createElement('div');
-          categoryHeader.className = 'category-header';
-          categoryHeader.innerHTML = `<h2 class="category-title">Applications - ${matchingCategory.title}</h2>`;
-
-          categorySection.appendChild(categoryHeader);
-          cardsContainer.appendChild(categorySection);
-        }
-
-        // Create grid for cards
-        const appGrid = document.createElement('div');
-        appGrid.className = 'app-cards';
-
-        // Sort apps alphabetically
-        filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
-
-        // Create app cards
-        filteredApps.forEach(([appName, tags]) => {
-          // Try to find the app data by various potential keys
-          let cardData;
-          const simpleName = appName.split('/').pop(); // Extract just the application name, no path
-
-          // Check for direct match with the exact appName
-          if (appCardsData[appName]) {
-            cardData = appCardsData[appName];
-          }
-          // If not found, try with just the simple name
-          else if (simpleName && appCardsData[simpleName]) {
-            cardData = appCardsData[simpleName];
-          }
-          // If still not found, try to match app_title
-          else {
-            const matchedCard = Object.values(appCardsData).find(
-              card => card && (card.app_title === appName || card.app_title === simpleName)
-            );
-
-            if (matchedCard) {
-              cardData = matchedCard;
-            } else {
-              // If still no match, use fallback
-              const defaultAppTitle = simpleName || appName;
-              cardData = {
-                name: appName,
-                description: "Application for " + searchQuery,
-                image_url: null,
-                tags: tags,
-                app_title: defaultAppTitle,
-                app_url: `applications/${defaultAppTitle}/`
-              };
-            }
-          }
-
-          // Generate a placeholder color based on app name
-          const hash = appName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
-          const hue = Math.abs(hash) % 360;
-          const bgColor = `hsl(${hue}, 70%, 85%)`;
-
-          // Get first letter of app title for placeholder
-          const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
-
-          // Create card content with image loading logic
-          const card = document.createElement('div');
-          card.className = 'app-card';
-
-          // Create thumbnail element
-          const thumbnail = document.createElement('div');
-          thumbnail.className = 'app-thumbnail';
-
-          // Create placeholder with app initial
-          const placeholder = document.createElement('div');
-          placeholder.className = 'image-placeholder';
-          placeholder.style.backgroundColor = bgColor;
-          placeholder.textContent = appInitial;
-          thumbnail.appendChild(placeholder);
-
-          // Add image if available
-          if (cardData.image_url) {
-            const img = document.createElement('img');
-            img.src = cardData.image_url;
-            img.alt = cardData.name;
-            img.loading = 'lazy';
-            img.onload = function() {
-              thumbnail.classList.add('loaded');
-            };
-            thumbnail.appendChild(img);
-          }
-
-          // Create details section
-          const details = document.createElement('div');
-          details.className = 'app-details';
-
-          // Add title
-          const title = document.createElement('h5');
-          title.textContent = cardData.app_title;
-          details.appendChild(title);
-
-          // Add description
-          const description = document.createElement('p');
-          description.textContent = cardData.description;
-          details.appendChild(description);
-
-          // Add tags
-          const tagsContainer = document.createElement('div');
-          tagsContainer.className = 'app-tags';
-
-          // Add up to 3 tags
-          tags.slice(0, 3).forEach(tag => {
-            const tagSpan = document.createElement('span');
-            tagSpan.className = 'tag';
-            tagSpan.textContent = tag;
-            tagSpan.addEventListener('click', function(e) {
-              e.stopPropagation(); // Prevent card click
-              window.handleTagClick(tag);
-              return false;
-            });
-            tagsContainer.appendChild(tagSpan);
-          });
-
-          // Add tag count if more than 3
-          if (tags.length > 3) {
-            const tagCount = document.createElement('span');
-            tagCount.className = 'tag-count';
-            tagCount.textContent = `+${tags.length - 3}`;
-            tagCount.setAttribute('data-tags', JSON.stringify(tags));
-            tagCount.addEventListener('click', function(e) {
-              e.stopPropagation(); // Prevent card click
-              showAllTags(this, this.getAttribute('data-tags'));
-              return false;
-            });
-            tagsContainer.appendChild(tagCount);
-          }
-
-          details.appendChild(tagsContainer);
-
-          // Assemble the card
-          card.appendChild(thumbnail);
-          card.appendChild(details);
-
-          // Ensure the app_url has the proper structure for navigation
-          let appUrl = cardData.app_url || '';
-          if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
-            appUrl = `applications/${appUrl}`;
-          }
-
-          // Make sure it ends with a trailing slash for consistency
-          if (!appUrl.endsWith('/')) {
-            appUrl += '/';
-          }
-
-          // Make the card clickable with the constructed URL
-          card.addEventListener('click', function() {
-            window.location.href = `${baseUrl}${appUrl}`;
-          });
-
-          // Add hover effect
-          card.style.cursor = 'pointer';
-
-          appGrid.appendChild(card);
-        });
-
-        cardsContainer.appendChild(appGrid);
-      }
-    }
-  } catch (error) {
-    console.error('Error loading category results:', error);
-    document.querySelector('.category-cards').innerHTML =
-      `<p>Error loading applications: ${error.message}</p>`;
-  }
-});
-
 // Method to create an app card with the enhanced tag count functionality
 function createAppCard(appName, tags, cardData, baseUrl) {
-  // Try to find the app data by various potential keys
   const simpleName = appName.split('/').pop(); // Extract just the application name, no path
-
-  // Create card content with image loading logic
   const card = document.createElement('div');
   card.className = 'app-card';
 
@@ -1015,7 +719,7 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   // Get first letter of app title for placeholder
   const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
 
-  // Create placeholder with app initial
+  // Add placeholder with app initial
   const placeholder = document.createElement('div');
   placeholder.className = 'image-placeholder';
   placeholder.style.backgroundColor = bgColor;
@@ -1026,11 +730,9 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   if (cardData.image_url) {
     const img = document.createElement('img');
     img.src = cardData.image_url;
-    img.alt = cardData.name;
+    img.alt = cardData.name || cardData.app_title;
     img.loading = 'lazy';
-    img.onload = function() {
-      thumbnail.classList.add('loaded');
-    };
+    img.onload = () => thumbnail.classList.add('loaded');
     thumbnail.appendChild(img);
   }
 
@@ -1038,15 +740,11 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   const details = document.createElement('div');
   details.className = 'app-details';
 
-  // Add title
-  const title = document.createElement('h5');
-  title.textContent = cardData.app_title;
-  details.appendChild(title);
-
-  // Add description
-  const description = document.createElement('p');
-  description.textContent = cardData.description;
-  details.appendChild(description);
+  // Add title and description
+  details.innerHTML = `
+    <h5>${cardData.app_title}</h5>
+    <p>${cardData.description}</p>
+  `;
 
   // Add tags
   const tagsContainer = document.createElement('div');
@@ -1082,8 +780,6 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   }
 
   details.appendChild(tagsContainer);
-
-  // Assemble the card
   card.appendChild(thumbnail);
   card.appendChild(details);
 
@@ -1092,19 +788,59 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
     appUrl = `applications/${appUrl}`;
   }
-
-  // Make sure it ends with a trailing slash for consistency
   if (!appUrl.endsWith('/')) {
     appUrl += '/';
   }
 
   // Make the card clickable with the constructed URL
-  card.addEventListener('click', function() {
-    window.location.href = `${baseUrl}${appUrl}`;
-  });
-
-  // Add hover effect
+  card.addEventListener('click', () => window.location.href = `${baseUrl}${appUrl}`);
   card.style.cursor = 'pointer';
 
   return card;
+}
+
+// Function to filter apps by category
+function filterAppsByCategory(tagsData, categoryLower) {
+  return Object.entries(tagsData)
+    .filter(([appName, tags]) => {
+      if (!tags || !tags.length) return false;
+      return tags.some(tag => {
+        const tagLower = tag.toLowerCase();
+        return tagLower === categoryLower ||
+              tagLower.includes(categoryLower) ||
+              (categoryLower === 'networking' && tagLower.includes('networking and distributed computing')) ||
+              (categoryLower === 'nlp & conversational' && tagLower.includes('natural language and conversational ai')) ||
+              (categoryLower === 'computer vision' && tagLower.includes('computer vision and perception'));
+      });
+    });
+}
+
+// Function to get card data for an app
+function getCardData(appName, tags, category, appCardsData) {
+  const simpleName = appName.split('/').pop(); // Extract just the application name, no path
+  if (appCardsData[appName]) {
+    return appCardsData[appName];
+  }
+  else if (simpleName && appCardsData[simpleName]) {
+    return appCardsData[simpleName];
+  }
+  else {
+    const matchedCard = Object.values(appCardsData).find(
+      card => card && (card.app_title === appName || card.app_title === simpleName)
+    );
+
+    if (matchedCard) {
+      return matchedCard;
+    }
+
+    const defaultAppTitle = simpleName || appName;
+    return {
+      name: appName,
+      description: "Application for " + category,
+      image_url: null,
+      tags: tags,
+      app_title: defaultAppTitle,
+      app_url: `applications/${defaultAppTitle}/`
+    };
+  }
 }
