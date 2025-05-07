@@ -102,7 +102,7 @@ CATEGORY_ICONS = {
     "Signal Processing": "radar",
     "Specialized Tools": "tune",
     "Extended Reality": "view_in_ar",
-    "visualization": "auto_awesome_motion"
+    "visualization": "auto_awesome_motion",
 }
 
 

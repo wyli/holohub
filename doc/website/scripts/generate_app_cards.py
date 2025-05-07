@@ -27,11 +27,11 @@ from common_utils import (  # noqa: E402
     extract_first_sentences,
     extract_image_from_readme,
     find_app_pairs,
+    format_category_title,
     get_full_image_url,
     get_git_root,
     logger,
     parse_metadata_file,
-    format_category_title,
 )
 
 OUTPUT_FILE = "doc/website/docs/_data/tmp_app_cards.json"

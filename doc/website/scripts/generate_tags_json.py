@@ -23,9 +23,10 @@ import sys
 from collections import Counter
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from common_utils import get_git_root, logger, CATEGORY_TITLE_MAPPING, format_category_title, CATEGORY_ICONS, find_app_pairs
+from common_utils import CATEGORY_ICONS, find_app_pairs, format_category_title, get_git_root, logger
 
 COMPONENT_TYPES = ["applications"]
+
 
 def generate_tags_json() -> None:
     """Generate tags.json file with metadata about all tags and their associated pages."""
@@ -61,12 +62,16 @@ def generate_tags_json() -> None:
     category_counts = Counter()
     for category in main_categories:
         for _, tags in app_tags.items():
-            if format_category_title(tags[0])== category:
+            if format_category_title(tags[0]) == category:
                 category_counts[category] += 1
 
     tag_categories = []
     for category in sorted(main_categories):
-        category_data = {"title": category, "count": category_counts[category], "icon": CATEGORY_ICONS[category]}
+        category_data = {
+            "title": category,
+            "count": category_counts[category],
+            "icon": CATEGORY_ICONS[category],
+        }
         tag_categories.append(category_data)
 
     output_data_dir = git_repo_path / "doc" / "website" / "docs" / "_data"
