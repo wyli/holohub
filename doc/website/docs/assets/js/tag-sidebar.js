@@ -191,17 +191,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       categoryHeader.addEventListener('click', function(e) {
         e.preventDefault();
 
-        // Update URL without reloading the page
+        // Navigate to the category page
         const newUrl = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
-        history.pushState({ category: category.title }, '', newUrl);
-
-        // Highlight this category
-        const allHeaders = document.querySelectorAll('.tag-category-header');
-        allHeaders.forEach(h => h.classList.remove('active'));
-        categoryHeader.classList.add('active');
-
-        // Load content directly instead of triggering events
-        loadCategoryContent(category.title);
+        window.location.href = newUrl;
       });
 
       categoryItem.appendChild(categoryHeader);
@@ -223,8 +215,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
     if (categoryParam) {
-      loadCategoryContent(categoryParam);
-
       // Highlight the active category in the sidebar
       highlightActiveCategory(categoryParam);
     }
@@ -234,7 +224,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       const urlParams = new URLSearchParams(window.location.search);
       const categoryParam = urlParams.get('category');
       if (categoryParam) {
-        loadCategoryContent(categoryParam);
         highlightActiveCategory(categoryParam);
       }
     });
@@ -302,11 +291,38 @@ async function loadCategoryContent(category) {
   console.log(`Loading content for category: ${category}`);
 
   try {
-    // Find the main content container
-    const contentContainer = document.querySelector('.category-content');
+    // Find or create the main content container
+    let contentContainer = document.querySelector('.category-content');
     if (!contentContainer) {
-      console.error("Could not find category content container");
-      return;
+      // Create the container if it doesn't exist
+      contentContainer = document.createElement('div');
+      contentContainer.className = 'category-content';
+
+      // Create the required child elements
+      const filterMessage = document.createElement('div');
+      filterMessage.className = 'category-filter-message';
+      filterMessage.textContent = 'Select a category from the sidebar to view applications';
+
+      const resultsSection = document.createElement('div');
+      resultsSection.className = 'category-results';
+      resultsSection.style.display = 'none';
+
+      const cardsContainer = document.createElement('div');
+      cardsContainer.className = 'category-cards';
+
+      // Assemble the structure
+      resultsSection.appendChild(cardsContainer);
+      contentContainer.appendChild(filterMessage);
+      contentContainer.appendChild(resultsSection);
+
+      // Find the main content area and insert our container
+      const mainContent = document.querySelector('.md-content__inner');
+      if (mainContent) {
+        mainContent.appendChild(contentContainer);
+      } else {
+        console.error("Could not find main content area");
+        return;
+      }
     }
 
     // Get references to message and results sections
