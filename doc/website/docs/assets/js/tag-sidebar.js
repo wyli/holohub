@@ -16,6 +16,29 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     }
 
+    // Function to handle tag clicks - fill search box with tag content
+    window.handleTagClick = function(tag) {
+      // Get the search input element from Material-mkdocs
+      const searchInput = document.querySelector('.md-search__input');
+      if (searchInput) {
+        // Focus the search input
+        searchInput.focus();
+
+        // Set the value to the tag content
+        searchInput.value = tag;
+
+        // Dispatch input event to trigger search
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        // If the search box is in a closed state, we need to toggle it open
+        const searchButton = document.querySelector('[data-md-toggle="search"]');
+        if (searchButton && !searchButton.checked) {
+          searchButton.checked = true;
+        }
+      }
+      return false; // Prevent default behavior and bubbling
+    };
+
     // Create a popup for displaying all tags
     const tagsPopup = document.createElement('div');
     tagsPopup.className = 'tags-popup';
@@ -62,6 +85,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         color: var(--md-accent-fg-color);
         font-weight: 600;
         border: 1px solid var(--md-accent-fg-color--transparent);
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+      .tags-popup-tag:hover {
+        background-color: var(--md-accent-fg-color);
+        color: white;
+        border-color: var(--md-accent-fg-color);
       }
     `;
     document.head.appendChild(popupStyles);
@@ -88,6 +118,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tagEl = document.createElement('span');
         tagEl.className = 'tags-popup-tag';
         tagEl.textContent = tag;
+        tagEl.addEventListener('click', function(e) {
+          // Close the popup
+          tagsPopup.style.display = 'none';
+          // Handle the tag click
+          window.handleTagClick(tag);
+          return false;
+        });
         content.appendChild(tagEl);
       });
 
@@ -600,6 +637,11 @@ async function loadCategoryContent(category) {
           const tagSpan = document.createElement('span');
           tagSpan.className = 'tag';
           tagSpan.textContent = tag;
+          tagSpan.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click
+            window.handleTagClick(tag);
+            return false;
+          });
           tagsContainer.appendChild(tagSpan);
         });
 
@@ -892,6 +934,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const tagSpan = document.createElement('span');
             tagSpan.className = 'tag';
             tagSpan.textContent = tag;
+            tagSpan.addEventListener('click', function(e) {
+              e.stopPropagation(); // Prevent card click
+              window.handleTagClick(tag);
+              return false;
+            });
             tagsContainer.appendChild(tagSpan);
           });
 
@@ -1010,6 +1057,11 @@ function createAppCard(appName, tags, cardData, baseUrl) {
     const tagSpan = document.createElement('span');
     tagSpan.className = 'tag';
     tagSpan.textContent = tag;
+    tagSpan.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent card click
+      window.handleTagClick(tag);
+      return false;
+    });
     tagsContainer.appendChild(tagSpan);
   });
 
@@ -1021,7 +1073,9 @@ function createAppCard(appName, tags, cardData, baseUrl) {
     tagCount.setAttribute('data-tags', JSON.stringify(tags));
     tagCount.addEventListener('click', function(e) {
       e.stopPropagation(); // Prevent card click
-      showAllTags(this, this.getAttribute('data-tags'));
+      if (typeof window.showAllTags === 'function') {
+        window.showAllTags(this, this.getAttribute('data-tags'));
+      }
       return false;
     });
     tagsContainer.appendChild(tagCount);

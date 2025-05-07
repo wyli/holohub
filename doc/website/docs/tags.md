@@ -28,6 +28,29 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     }
 
+    // Function to handle tag clicks - fill search box with tag content
+    window.handleTagClick = window.handleTagClick || function(tag) {
+      // Get the search input element from Material-mkdocs
+      const searchInput = document.querySelector('.md-search__input');
+      if (searchInput) {
+        // Focus the search input
+        searchInput.focus();
+
+        // Set the value to the tag content
+        searchInput.value = tag;
+
+        // Dispatch input event to trigger search
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        // If the search box is in a closed state, we need to toggle it open
+        const searchButton = document.querySelector('[data-md-toggle="search"]');
+        if (searchButton && !searchButton.checked) {
+          searchButton.checked = true;
+        }
+      }
+      return false; // Prevent default behavior and bubbling
+    };
+
     // Determine path to _data directory
     let dataPath = `${baseUrl}_data/`;
 
@@ -248,6 +271,13 @@ document.addEventListener('DOMContentLoaded', async function() {
               const tagSpan = document.createElement('span');
               tagSpan.className = 'tag';
               tagSpan.textContent = tag;
+              tagSpan.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent card click
+                if (window.handleTagClick) {
+                  window.handleTagClick(tag);
+                }
+                return false;
+              });
               tagsContainer.appendChild(tagSpan);
             });
 
@@ -299,6 +329,118 @@ document.addEventListener('DOMContentLoaded', async function() {
         cardsContainer.appendChild(appGrid);
       }
     }
+
+    // Fallback showAllTags function if not already defined
+    window.showAllTags = window.showAllTags || function(element, allTagsStr) {
+      // Parse the tags
+      const allTags = JSON.parse(allTagsStr);
+
+      // Create popup if it doesn't exist
+      let tagsPopup = document.querySelector('.tags-popup');
+      if (!tagsPopup) {
+        // Create a popup for displaying all tags
+        tagsPopup = document.createElement('div');
+        tagsPopup.className = 'tags-popup';
+        tagsPopup.style.display = 'none';
+        document.body.appendChild(tagsPopup);
+
+        // Add click event handler to close popup when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!tagsPopup.contains(e.target) && !e.target.classList.contains('tag-count')) {
+            tagsPopup.style.display = 'none';
+          }
+        });
+
+        // Add the popup styles to the document if they don't exist
+        if (!document.querySelector('style.tags-popup-styles')) {
+          const popupStyles = document.createElement('style');
+          popupStyles.className = 'tags-popup-styles';
+          popupStyles.textContent = `
+            .tags-popup {
+              position: absolute;
+              background-color: var(--md-default-bg-color);
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+              padding: 1rem;
+              max-width: 300px;
+              z-index: 1000;
+              border: 1px solid var(--md-default-fg-color--lightest);
+            }
+            .tags-popup-title {
+              font-size: 0.85rem;
+              font-weight: 600;
+              margin-bottom: 0.7rem;
+              color: var(--md-default-fg-color);
+            }
+            .tags-popup-content {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+            }
+            .tags-popup-tag {
+              display: inline-block;
+              padding: 0.2rem 0.5rem;
+              background-color: var(--md-accent-fg-color--transparent);
+              border-radius: 4px;
+              font-size: 0.65rem;
+              color: var(--md-accent-fg-color);
+              font-weight: 600;
+              border: 1px solid var(--md-accent-fg-color--transparent);
+              cursor: pointer;
+              transition: background-color 0.2s ease, color 0.2s ease;
+            }
+            .tags-popup-tag:hover {
+              background-color: var(--md-accent-fg-color);
+              color: white;
+              border-color: var(--md-accent-fg-color);
+            }
+          `;
+          document.head.appendChild(popupStyles);
+        }
+      }
+
+      // Clear the popup content
+      tagsPopup.innerHTML = '';
+
+      // Add title
+      const title = document.createElement('div');
+      title.className = 'tags-popup-title';
+      title.textContent = 'All Tags';
+      tagsPopup.appendChild(title);
+
+      // Add tags
+      const content = document.createElement('div');
+      content.className = 'tags-popup-content';
+
+      allTags.forEach(tag => {
+        const tagEl = document.createElement('span');
+        tagEl.className = 'tags-popup-tag';
+        tagEl.textContent = tag;
+        tagEl.addEventListener('click', function(e) {
+          // Close the popup
+          tagsPopup.style.display = 'none';
+          // Handle the tag click
+          if (window.handleTagClick) {
+            window.handleTagClick(tag);
+          }
+          return false;
+        });
+        content.appendChild(tagEl);
+      });
+
+      tagsPopup.appendChild(content);
+
+      // Position the popup
+      const rect = element.getBoundingClientRect();
+      tagsPopup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+      tagsPopup.style.left = (rect.left + window.scrollX) + 'px';
+
+      // Show the popup
+      tagsPopup.style.display = 'block';
+
+      // Prevent event propagation
+      return false;
+    };
   } catch (error) {
     console.error('Error loading category results:', error);
     document.querySelector('.category-cards').innerHTML =

@@ -161,6 +161,7 @@
   font-weight: 600;
   transition: background-color 0.2s ease, color 0.2s ease;
   border: 1px solid var(--md-accent-fg-color--transparent);
+  cursor: pointer;
 }
 
 .app-tag:hover, .tag:hover {
