@@ -117,31 +117,24 @@ title: Applications by Category
 }
 
 .app-details {
-  padding: 1.2rem;
+  padding: 0.8rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
 
-.app-details h4 {
-  margin: 0;
-  color: var(--md-default-fg-color--light);
-  font-size: 0.8rem;
-  font-weight: normal;
-}
-
 .app-details h5 {
-  margin: 0 0 0.8rem 0;
-  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.8rem;
   color: var(--md-default-fg-color);
   font-weight: 600;
 }
 
 .app-details p {
-  margin: 0 0 1rem 0;
-  font-size: 0.9rem;
+  margin: 0 0 0.7rem 0;
+  font-size: 0.7rem;
   color: var(--md-default-fg-color--light);
-  line-height: 1.4;
+  line-height: 1.2;
   flex-grow: 1;
 }
 
@@ -149,16 +142,16 @@ title: Applications by Category
 .app-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.3rem;
   margin-top: auto;
 }
 
 .tag {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 2px 8px;
   background-color: var(--md-default-fg-color--lightest);
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--md-default-fg-color);
   transition: background-color 0.2s ease;
 }
@@ -169,9 +162,9 @@ title: Applications by Category
 
 .tag-count {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--md-default-fg-color--light);
 }
 
