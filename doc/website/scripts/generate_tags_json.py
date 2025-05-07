@@ -103,9 +103,6 @@ def generate_tags_json() -> None:
         logger.error("This script requires Git and must be run from within a Git repository.")
         return
 
-    # Dictionary to store tags and their associated pages
-    tags_data = {}
-
     # Dictionaries to collect the tag categories
     main_categories = set()  # First tags (e.g., "healthcare AI")
     subcategories = defaultdict(set)  # Second tags by main category (e.g., "video", "audio")
@@ -151,7 +148,6 @@ def generate_tags_json() -> None:
 
             # Store tags data for the page
             app_title = page_metadata['title']
-            tags_data[app_title] = tags
             app_tags[app_title] = tags
 
             # Extract tag categories (assuming first tag is main category, second is subcategory)
@@ -236,12 +232,6 @@ def generate_tags_json() -> None:
         output_data_dir = git_repo_path / "doc" / "website" / "docs" / "_data"
         if not output_data_dir.exists():
             output_data_dir.mkdir(parents=True, exist_ok=True)
-
-    # Write tags.json to the site root
-    tags_file_path = output_data_dir / "tmp_tags.json"
-    with open(tags_file_path, "w") as tags_file:
-        json.dump(tags_data, tags_file, indent=2)
-    logger.info(f"Generated tags.json with {len(tags_data)} tags at {tags_file_path}")
 
     # Write pre-processed tag-categories.json to reduce JS processing
     categories_file_path = output_data_dir / "tmp_tag-categories.json"

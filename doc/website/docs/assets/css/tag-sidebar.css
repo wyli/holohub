@@ -3,7 +3,7 @@
   --tag-sidebar-width: 14rem;
   --tag-sidebar-mobile-width: 12.1rem;
   --tag-sidebar-padding: 0.5rem;
-  --tag-sidebar-font-size: 0.7rem;
+  --tag-sidebar-font-size: 0.6rem;
   --tag-sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --tag-sidebar-shadow: 0 0 0.6rem rgba(0,0,0,.05);
 }
@@ -48,7 +48,7 @@
 .tag-category-header {
   display: flex;
   align-items: center;
-  padding: 0.35rem 0 0.35rem 0.4rem;
+  padding: 0.2rem 0.2rem 0.2rem 0.2rem;
   cursor: pointer;
   color: var(--md-typeset-color);
   font-weight: 500;
@@ -336,4 +336,47 @@
 /* Hide the title */
 .md-content__inner > h1:first-child {
   display: none;
+}
+
+.tags-popup {
+  position: absolute;
+  background-color: var(--md-default-bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 1rem;
+  max-width: 300px;
+  z-index: 1000;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.tags-popup-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+  color: var(--md-default-fg-color);
+}
+
+.tags-popup-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tags-popup-tag {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background-color: var(--md-accent-fg-color--transparent);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: var(--md-accent-fg-color);
+  font-weight: 600;
+  border: 1px solid var(--md-accent-fg-color--transparent);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tags-popup-tag:hover {
+  background-color: var(--md-accent-fg-color);
+  color: white;
+  border-color: var(--md-accent-fg-color);
 }
