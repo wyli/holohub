@@ -16,6 +16,95 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     }
 
+    // Create a popup for displaying all tags
+    const tagsPopup = document.createElement('div');
+    tagsPopup.className = 'tags-popup';
+    tagsPopup.style.display = 'none';
+    document.body.appendChild(tagsPopup);
+
+    // Add click event handler to close popup when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!tagsPopup.contains(e.target) && !e.target.classList.contains('tag-count')) {
+        tagsPopup.style.display = 'none';
+      }
+    });
+
+    // Add the popup styles to the document
+    const popupStyles = document.createElement('style');
+    popupStyles.textContent = `
+      .tags-popup {
+        position: absolute;
+        background-color: var(--md-default-bg-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 1rem;
+        max-width: 300px;
+        z-index: 1000;
+        border: 1px solid var(--md-default-fg-color--lightest);
+      }
+      .tags-popup-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.7rem;
+        color: var(--md-default-fg-color);
+      }
+      .tags-popup-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .tags-popup-tag {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        background-color: var(--md-accent-fg-color--transparent);
+        border-radius: 4px;
+        font-size: 0.65rem;
+        color: var(--md-accent-fg-color);
+        font-weight: 600;
+        border: 1px solid var(--md-accent-fg-color--transparent);
+      }
+    `;
+    document.head.appendChild(popupStyles);
+
+    // Function to show tag popup
+    window.showAllTags = function(element, allTags) {
+      // Parse the tags from the data attribute
+      const tags = JSON.parse(allTags);
+
+      // Clear the popup content
+      tagsPopup.innerHTML = '';
+
+      // Add title
+      const title = document.createElement('div');
+      title.className = 'tags-popup-title';
+      title.textContent = 'All Tags';
+      tagsPopup.appendChild(title);
+
+      // Add tags
+      const content = document.createElement('div');
+      content.className = 'tags-popup-content';
+
+      tags.forEach(tag => {
+        const tagEl = document.createElement('span');
+        tagEl.className = 'tags-popup-tag';
+        tagEl.textContent = tag;
+        content.appendChild(tagEl);
+      });
+
+      tagsPopup.appendChild(content);
+
+      // Position the popup
+      const rect = element.getBoundingClientRect();
+      tagsPopup.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+      tagsPopup.style.left = (rect.left + window.scrollX) + 'px';
+
+      // Show the popup
+      tagsPopup.style.display = 'block';
+
+      // Prevent event propagation
+      return false;
+    };
+
     console.log("Base URL detected:", baseUrl);
 
     // Use a more robust path resolution approach
@@ -519,6 +608,12 @@ async function loadCategoryContent(category) {
           const tagCount = document.createElement('span');
           tagCount.className = 'tag-count';
           tagCount.textContent = `+${tags.length - 3}`;
+          tagCount.setAttribute('data-tags', JSON.stringify(tags));
+          tagCount.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click
+            showAllTags(this, this.getAttribute('data-tags'));
+            return false;
+          });
           tagsContainer.appendChild(tagCount);
         }
 
@@ -805,6 +900,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             const tagCount = document.createElement('span');
             tagCount.className = 'tag-count';
             tagCount.textContent = `+${tags.length - 3}`;
+            tagCount.setAttribute('data-tags', JSON.stringify(tags));
+            tagCount.addEventListener('click', function(e) {
+              e.stopPropagation(); // Prevent card click
+              showAllTags(this, this.getAttribute('data-tags'));
+              return false;
+            });
             tagsContainer.appendChild(tagCount);
           }
 
@@ -845,3 +946,111 @@ document.addEventListener('DOMContentLoaded', async function() {
       `<p>Error loading applications: ${error.message}</p>`;
   }
 });
+
+// Method to create an app card with the enhanced tag count functionality
+function createAppCard(appName, tags, cardData, baseUrl) {
+  // Try to find the app data by various potential keys
+  const simpleName = appName.split('/').pop(); // Extract just the application name, no path
+
+  // Create card content with image loading logic
+  const card = document.createElement('div');
+  card.className = 'app-card';
+
+  // Create thumbnail element
+  const thumbnail = document.createElement('div');
+  thumbnail.className = 'app-thumbnail';
+
+  // Generate a placeholder color based on app name
+  const hash = appName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+  const hue = Math.abs(hash) % 360;
+  const bgColor = `hsl(${hue}, 70%, 85%)`;
+
+  // Get first letter of app title for placeholder
+  const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
+
+  // Create placeholder with app initial
+  const placeholder = document.createElement('div');
+  placeholder.className = 'image-placeholder';
+  placeholder.style.backgroundColor = bgColor;
+  placeholder.textContent = appInitial;
+  thumbnail.appendChild(placeholder);
+
+  // Add image if available
+  if (cardData.image_url) {
+    const img = document.createElement('img');
+    img.src = cardData.image_url;
+    img.alt = cardData.name;
+    img.loading = 'lazy';
+    img.onload = function() {
+      thumbnail.classList.add('loaded');
+    };
+    thumbnail.appendChild(img);
+  }
+
+  // Create details section
+  const details = document.createElement('div');
+  details.className = 'app-details';
+
+  // Add title
+  const title = document.createElement('h5');
+  title.textContent = cardData.app_title;
+  details.appendChild(title);
+
+  // Add description
+  const description = document.createElement('p');
+  description.textContent = cardData.description;
+  details.appendChild(description);
+
+  // Add tags
+  const tagsContainer = document.createElement('div');
+  tagsContainer.className = 'app-tags';
+
+  // Add up to 3 tags
+  tags.slice(0, 3).forEach(tag => {
+    const tagSpan = document.createElement('span');
+    tagSpan.className = 'tag';
+    tagSpan.textContent = tag;
+    tagsContainer.appendChild(tagSpan);
+  });
+
+  // Add tag count if more than 3
+  if (tags.length > 3) {
+    const tagCount = document.createElement('span');
+    tagCount.className = 'tag-count';
+    tagCount.textContent = `+${tags.length - 3}`;
+    tagCount.setAttribute('data-tags', JSON.stringify(tags));
+    tagCount.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent card click
+      showAllTags(this, this.getAttribute('data-tags'));
+      return false;
+    });
+    tagsContainer.appendChild(tagCount);
+  }
+
+  details.appendChild(tagsContainer);
+
+  // Assemble the card
+  card.appendChild(thumbnail);
+  card.appendChild(details);
+
+  // Ensure the app_url has the proper structure for navigation
+  let appUrl = cardData.app_url || '';
+  if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
+    appUrl = `applications/${appUrl}`;
+  }
+
+  // Make sure it ends with a trailing slash for consistency
+  if (!appUrl.endsWith('/')) {
+    appUrl += '/';
+  }
+
+  // Make the card clickable with the constructed URL
+  card.addEventListener('click', function() {
+    window.location.href = `${baseUrl}${appUrl}`;
+  });
+
+  // Add hover effect
+  card.style.cursor = 'pointer';
+
+  return card;
+}

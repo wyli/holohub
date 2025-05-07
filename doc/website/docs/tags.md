@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Sort apps alphabetically
         filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
 
-        // Create app cards
+        // Create app cards using the shared function
         filteredApps.forEach(([appName, tags]) => {
           // Try to find the app data by various potential keys
           let cardData;
@@ -185,101 +185,115 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
           }
 
-          // Generate a placeholder color based on app name
-          const hash = appName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
-          const hue = Math.abs(hash) % 360;
-          const bgColor = `hsl(${hue}, 70%, 85%)`;
+          // Use the createAppCard function if available, or fall back to inline creation
+          if (typeof window.createAppCard === 'function') {
+            const card = window.createAppCard(appName, tags, cardData, baseUrl);
+            appGrid.appendChild(card);
+          } else {
+            // Fallback card creation (existing code)
+            const card = document.createElement('div');
+            card.className = 'app-card';
 
-          // Get first letter of app title for placeholder
-          const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
+            // Create thumbnail element
+            const thumbnail = document.createElement('div');
+            thumbnail.className = 'app-thumbnail';
 
-          // Create card content with image loading logic
-          const card = document.createElement('div');
-          card.className = 'app-card';
+            // Generate a placeholder color based on app name
+            const hash = appName.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+            const hue = Math.abs(hash) % 360;
+            const bgColor = `hsl(${hue}, 70%, 85%)`;
 
-          // Create thumbnail element
-          const thumbnail = document.createElement('div');
-          thumbnail.className = 'app-thumbnail';
+            // Get first letter of app title for placeholder
+            const appInitial = (cardData.app_title || simpleName || appName).charAt(0).toUpperCase();
 
-          // Create placeholder with app initial
-          const placeholder = document.createElement('div');
-          placeholder.className = 'image-placeholder';
-          placeholder.style.backgroundColor = bgColor;
-          placeholder.textContent = appInitial;
-          thumbnail.appendChild(placeholder);
+            // Create placeholder with app initial
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-placeholder';
+            placeholder.style.backgroundColor = bgColor;
+            placeholder.textContent = appInitial;
+            thumbnail.appendChild(placeholder);
 
-          // Add image if available
-          if (cardData.image_url) {
-            const img = document.createElement('img');
-            img.src = cardData.image_url;
-            img.alt = cardData.name;
-            img.loading = 'lazy';
-            img.onload = function() {
-              thumbnail.classList.add('loaded');
-            };
-            thumbnail.appendChild(img);
+            // Add image if available
+            if (cardData.image_url) {
+              const img = document.createElement('img');
+              img.src = cardData.image_url;
+              img.alt = cardData.name;
+              img.loading = 'lazy';
+              img.onload = function() {
+                thumbnail.classList.add('loaded');
+              };
+              thumbnail.appendChild(img);
+            }
+
+            // Create details section
+            const details = document.createElement('div');
+            details.className = 'app-details';
+
+            // Add title
+            const title = document.createElement('h5');
+            title.textContent = cardData.app_title;
+            details.appendChild(title);
+
+            // Add description
+            const description = document.createElement('p');
+            description.textContent = cardData.description;
+            details.appendChild(description);
+
+            // Add tags
+            const tagsContainer = document.createElement('div');
+            tagsContainer.className = 'app-tags';
+
+            // Add up to 3 tags
+            tags.slice(0, 3).forEach(tag => {
+              const tagSpan = document.createElement('span');
+              tagSpan.className = 'tag';
+              tagSpan.textContent = tag;
+              tagsContainer.appendChild(tagSpan);
+            });
+
+            // Add tag count if more than 3
+            if (tags.length > 3) {
+              const tagCount = document.createElement('span');
+              tagCount.className = 'tag-count';
+              tagCount.textContent = `+${tags.length - 3}`;
+              tagCount.setAttribute('data-tags', JSON.stringify(tags));
+              tagCount.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent card click
+                if (typeof window.showAllTags === 'function') {
+                  window.showAllTags(this, this.getAttribute('data-tags'));
+                }
+                return false;
+              });
+              tagsContainer.appendChild(tagCount);
+            }
+
+            details.appendChild(tagsContainer);
+
+            // Assemble the card
+            card.appendChild(thumbnail);
+            card.appendChild(details);
+
+            // Ensure the app_url has the proper structure for navigation
+            let appUrl = cardData.app_url || '';
+            if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
+              appUrl = `applications/${appUrl}`;
+            }
+
+            // Make sure it ends with a trailing slash for consistency
+            if (!appUrl.endsWith('/')) {
+              appUrl += '/';
+            }
+
+            // Make the card clickable with the constructed URL
+            card.addEventListener('click', function() {
+              window.location.href = `${baseUrl}${appUrl}`;
+            });
+
+            // Add hover effect
+            card.style.cursor = 'pointer';
+
+            appGrid.appendChild(card);
           }
-
-          // Create details section
-          const details = document.createElement('div');
-          details.className = 'app-details';
-
-          // Add title
-          const title = document.createElement('h5');
-          title.textContent = cardData.app_title;
-          details.appendChild(title);
-
-          // Add description
-          const description = document.createElement('p');
-          description.textContent = cardData.description;
-          details.appendChild(description);
-
-          // Add tags
-          const tagsContainer = document.createElement('div');
-          tagsContainer.className = 'app-tags';
-
-          // Add up to 3 tags
-          tags.slice(0, 3).forEach(tag => {
-            const tagSpan = document.createElement('span');
-            tagSpan.className = 'tag';
-            tagSpan.textContent = tag;
-            tagsContainer.appendChild(tagSpan);
-          });
-
-          // Add tag count if more than 3
-          if (tags.length > 3) {
-            const tagCount = document.createElement('span');
-            tagCount.className = 'tag-count';
-            tagCount.textContent = `+${tags.length - 3}`;
-            tagsContainer.appendChild(tagCount);
-          }
-
-          details.appendChild(tagsContainer);
-
-          // Assemble the card
-          card.appendChild(thumbnail);
-          card.appendChild(details);
-
-          // Ensure the app_url has the proper structure for navigation
-          let appUrl = cardData.app_url || '';
-          if (!appUrl.startsWith('applications/') && !appUrl.startsWith('/applications/')) {
-            appUrl = `applications/${appUrl}`;
-          }
-
-          // Make sure it ends with a trailing slash for consistency
-          if (!appUrl.endsWith('/')) {
-            appUrl += '/';
-          }
-
-          // Make the card clickable with the constructed URL
-          card.addEventListener('click', function() {
-            window.location.href = `${baseUrl}${appUrl}`;
-          });
-
-          // Add hover effect
-          card.style.cursor = 'pointer';
-
-          appGrid.appendChild(card);
         });
 
         cardsContainer.appendChild(appGrid);
