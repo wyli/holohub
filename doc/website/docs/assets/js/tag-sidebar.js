@@ -96,6 +96,12 @@ function createLoadingIndicator() {
 let loading = null;
 let preloadStarted = false;
 
+function isTagsPage() {
+  return window.location.pathname.endsWith('/tags/') ||
+         window.location.pathname.endsWith('/tags') ||
+         window.location.pathname.includes('/tags/index');
+}
+
 // Function to check if we're on a page that needs the sidebar
 function needsSidebar() {
   const isTagsPageResult = isTagsPage();
@@ -116,7 +122,6 @@ function initializeIfNeeded() {
   if (preloadStarted) {
     return; // Already initialized or in progress
   }
-
   if (needsSidebar()) {
     preloadStarted = true;
     loading = createLoadingIndicator();
@@ -156,12 +161,10 @@ function fetchDataWithCache(url, forceRefresh = false) {
   });
 }
 
-// Function to parse URL parameters
 function getUrlParams() {
   return new URLSearchParams(window.location.search);
 }
 
-// Function to check if a cache refresh is requested
 function isForceRefreshRequested() {
   return getUrlParams().has('refresh_cache');
 }
@@ -169,28 +172,22 @@ function isForceRefreshRequested() {
 // Allow triggering a reload via URL
 function checkForCacheRefreshParam() {
   if (isForceRefreshRequested() && needsSidebar()) {
-    // Remove the parameter from URL to prevent endless refreshing
     const urlParams = getUrlParams();
     urlParams.delete('refresh_cache');
     const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
     window.history.replaceState({}, document.title, newUrl);
 
-    // Refresh the cache
     return window.refreshTagSidebarCache();
   }
   return Promise.resolve(false);
 }
 
-// Add a function to force refresh the cache
 window.refreshTagSidebarCache = async function() {
   console.log("Force refreshing tag sidebar cache");
   const baseUrl = getBaseUrl();
   let dataPath = `${baseUrl}_data/`;
 
-  // Clear the existing promise
   dataLoadPromise = null;
-
-  // Reset global data
   window.tagSidebarData = {
     categories: null,
     appCardsData: null,
@@ -276,11 +273,8 @@ async function initializeUI() {
   }
   try {
     await checkForCacheRefreshParam();
-
-    // Get the base URL
     const baseUrl = getBaseUrl();
 
-    // Create global tag popup instance if it doesn't exist yet
     if (!globalTagPopup) {
       globalTagPopup = new TagPopup();
     }
@@ -293,8 +287,6 @@ async function initializeUI() {
       }
       return false;
     };
-
-    // Wait for data if still loading
     if (window.tagSidebarData.isLoading) {
       console.log("Waiting for data to complete loading...");
       await new Promise(resolve => {
@@ -597,11 +589,9 @@ function createCategoryItem(category, tagsPath) {
     window.location.href = newUrl;
   });
 
-  // Add hover effect for better UX
   categoryHeader.addEventListener('mouseenter', function() {
     this.classList.add('hover');
   });
-
   categoryHeader.addEventListener('mouseleave', function() {
     this.classList.remove('hover');
   });
@@ -623,10 +613,8 @@ function highlightActiveCategory(categoryName) {
     if (!sidebarCache.categoryItems.length) return;
   }
 
-  // Normalize category name for comparison
   const categoryLower = categoryName.toLowerCase();
 
-  // Efficiently update only what's necessary
   let activeItem = null;
 
   // Remove active class from all and find matching item
@@ -682,13 +670,6 @@ function handleCategoryParamChange() {
   } else if (isTagsPage()) {
     toggleCategoryFilterMessage(true);
   }
-}
-
-// Function to check if we're on the tags page
-function isTagsPage() {
-  return window.location.pathname.endsWith('/tags/') ||
-         window.location.pathname.endsWith('/tags') ||
-         window.location.pathname.includes('/tags/index');
 }
 
 // Function to create or get the category content container
