@@ -919,7 +919,16 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   card.appendChild(details);
 
   // Add click handler to navigate to app page
-  card.addEventListener('click', () => window.location.href = `${baseUrl}${cardData.app_url}`);
+  card.addEventListener('click', (event) => {
+    const url = `${baseUrl}${cardData.app_url}`;
+    if (event.ctrlKey || event.metaKey) {
+      // Open in new tab if Ctrl/Cmd key is pressed
+      window.open(url, '_blank');
+    } else {
+      // Regular navigation
+      window.location.href = url;
+    }
+  });
   card.style.cursor = 'pointer';
 
   return card;
