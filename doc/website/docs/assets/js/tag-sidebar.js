@@ -10,9 +10,6 @@ function getBaseUrl() {
   return '';
 }
 
-// Remove unnecessary cache version constant
-let cacheBuster = '';
-
 // Add CSS to hide initial non-dynamic content until ready
 (function addInitialStyles() {
   const style = document.createElement('style');
@@ -114,16 +111,12 @@ function makeContentVisible() {
   }
 }
 
-// Start preloading as early as possible during script parsing
 document.addEventListener('readystatechange', function() {
   if (document.readyState === 'interactive' && !preloadStarted) {
-    // Check if this page needs the sidebar before loading data
     if (!needsSidebar()) {
-      console.log("Not on HoloHub root or tags page, skipping sidebar loading");
       makeContentVisible(); // Ensure content is visible
       return;
     }
-
     preloadStarted = true;
     loading = createLoadingIndicator();
     preloadData();
@@ -138,13 +131,17 @@ if ((document.readyState === 'interactive' || document.readyState === 'complete'
     loading = createLoadingIndicator();
     preloadData();
   } else {
-    console.log("Not on HoloHub root or tags page, skipping sidebar loading");
     makeContentVisible(); // Ensure content is visible
   }
 }
 
 // Immediately start preloading data as early as possible
 function preloadData() {
+  if (!needsSidebar()) {
+    makeContentVisible();
+    return;
+  }
+
   console.log("Preloading tag sidebar data...");
   window.tagSidebarData = window.tagSidebarData || {
     categories: null,
@@ -153,8 +150,6 @@ function preloadData() {
     preloadStarted: false,
     preloadComplete: false
   };
-
-  // Don't start preload twice
   if (window.tagSidebarData.preloadStarted) {
     return;
   }
@@ -165,13 +160,10 @@ function preloadData() {
   // Get the base URL early
   const baseUrl = getBaseUrl();
   const dataPath = `${baseUrl}_data/`;
-
-  // Check if force refresh needed
   const urlParams = new URLSearchParams(window.location.search);
   const forceRefresh = urlParams.has('refresh_cache');
   const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
 
-  // Start requests immediately and store the promises
   window.tagSidebarData.categoriesPromise = fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
     headers: {
       'Cache-Control': forceRefresh ? 'no-cache' : '',
@@ -220,7 +212,6 @@ function preloadData() {
     window.tagSidebarData.isLoading = false;
     window.tagSidebarData.preloadComplete = true;
 
-    // If DOM is already interactive/complete, initialize the UI immediately
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
       initializeUI();
     }
@@ -229,10 +220,7 @@ function preloadData() {
 
 // Initialize UI when data is available
 async function initializeUI() {
-  const isTagsPageResult = isTagsPage();
-  const isHoloHub = window.location.pathname.endsWith('/holohub/');
-  if (!isHoloHub && !isTagsPageResult) {
-    console.log("Not on HoloHub root or tags page, skipping sidebar loading");
+  if (!needsSidebar()) {
     makeContentVisible(); // Ensure content is visible
     return;
   }
@@ -305,11 +293,8 @@ async function initializeUI() {
     }
 
     console.log("Tag sidebar ready");
-
-    // Mark the body as ready to trigger CSS transitions
     document.body.classList.add('tag-sidebar-ready');
     document.body.classList.add('content-ready');
-
     // Hide loading indicator
     if (loading) {
       loading.hide();
@@ -322,29 +307,21 @@ async function initializeUI() {
 
 // Main initialization on DOMContentLoaded - will execute if readystatechange hasn't triggered yet
 document.addEventListener('DOMContentLoaded', function() {
-  // If preloading hasn't started yet, check if sidebar is needed
   if (!preloadStarted) {
     if (needsSidebar()) {
       preloadStarted = true;
       loading = createLoadingIndicator();
       preloadData();
     } else {
-      console.log("Not on HoloHub root or tags page, skipping sidebar loading");
       makeContentVisible(); // Ensure content is visible
     }
   }
-
-  // If data is already preloaded, initialize the UI
   if (window.tagSidebarData && window.tagSidebarData.preloadComplete) {
     initializeUI();
   }
 });
 
-// Second event listener is no longer needed since we handle everything in initializeUI
-
-// Function to handle data loading with HTTP caching
 async function loadDataWithCache(dataPath, forceRefresh = false) {
-  // Initialize data structure
   let data = {
     categories: null,
     appCardsData: null
@@ -353,15 +330,12 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
   // If preload has completed or is in progress, use those results
   if (window.tagSidebarData.preloadStarted) {
     console.log("Using preloaded data...");
-
-    // If preload is complete, use the cached results
     if (window.tagSidebarData.preloadComplete) {
       return {
         categories: window.tagSidebarData.categories,
         appCardsData: window.tagSidebarData.appCardsData
       };
     }
-
     // If preload is still in progress, wait for it to complete
     if (window.tagSidebarData.isLoading) {
       console.log("Waiting for preload to complete...");
@@ -380,16 +354,12 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
     }
   }
 
-  // If we're forcing a refresh or preload failed, make new requests
   if (forceRefresh || !window.tagSidebarData.preloadComplete) {
-    // Add cache buster for forced refresh only
     const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
 
-    // Fetch from server with appropriate cache headers
     try {
       console.log("Fetching data from server with HTTP caching");
 
-      // Use Promise.allSettled to handle partial failures
       const responses = await Promise.allSettled([
         fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
           headers: {
@@ -439,21 +409,15 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
 // Global cache state to prevent duplicate loads
 let dataLoadPromise = null;
 
-// Function to handle cache loading with a shared promise
 function loadDataWithCacheShared(dataPath, forceRefresh = false) {
-  // If already loading, return the existing promise
   if (dataLoadPromise) {
     return dataLoadPromise;
   }
-
-  // Create a new loading promise
   dataLoadPromise = loadDataWithCache(dataPath, forceRefresh);
-
-  // Once resolved, clear the promise so it can be recreated if needed
   dataLoadPromise.finally(() => {
     setTimeout(() => {
       dataLoadPromise = null;
-    }, 100); // Small delay to prevent race conditions
+    }, 100);
   });
 
   return dataLoadPromise;
@@ -495,7 +459,7 @@ window.refreshTagSidebarCache = async function() {
 // Allow triggering a reload via URL
 function checkForCacheRefreshParam() {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('refresh_cache')) {
+  if (urlParams.has('refresh_cache') && needsSidebar()) {
     // Remove the parameter from URL to prevent endless refreshing
     urlParams.delete('refresh_cache');
     const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
