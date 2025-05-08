@@ -90,7 +90,7 @@ def generate_tags_json() -> None:
     )
 
 
-def on_pre_build(config, **kwargs):
+def on_startup(**kwargs):
     generate_tags_json()
 
 
