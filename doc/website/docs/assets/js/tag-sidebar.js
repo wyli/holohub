@@ -96,14 +96,30 @@ function createLoadingIndicator() {
   };
 }
 
+// State variables
 let loading = null;
 let preloadStarted = false;
+let dataLoadPromise = null;
+let globalTagPopup;
+
+// Global reference to sidebar elements to avoid repeated querying
+let sidebarCache = {
+  initialized: false,
+  sidebarElement: null,
+  categoryItems: null,
+  renderedCategories: false
+};
 
 // Function to check if we're on a page that needs the sidebar
 function needsSidebar() {
-  const isTagsPageResult = isTagsPage();
-  const isHoloHub = window.location.pathname.endsWith('/holohub/');
-  return isHoloHub || isTagsPageResult;
+  return isTagsPage() || window.location.pathname.endsWith('/holohub/');
+}
+
+// Function to check if we're on the tags page
+function isTagsPage() {
+  return window.location.pathname.endsWith('/tags/') ||
+         window.location.pathname.endsWith('/tags') ||
+         window.location.pathname.includes('/tags/index');
 }
 
 // Ensure content is visible regardless of sidebar status
@@ -112,6 +128,21 @@ function makeContentVisible() {
   if (loading) {
     loading.hide();
   }
+}
+
+// Create fetch request with proper caching headers
+function createFetchRequest(url, forceRefresh = false) {
+  return fetch(url, {
+    headers: {
+      'Cache-Control': forceRefresh ? 'no-cache' : '',
+      'Pragma': forceRefresh ? 'no-cache' : ''
+    }
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+  });
 }
 
 // Start preloading as early as possible during script parsing
@@ -146,6 +177,8 @@ if ((document.readyState === 'interactive' || document.readyState === 'complete'
 // Immediately start preloading data as early as possible
 function preloadData() {
   console.log("Preloading tag sidebar data...");
+
+  // Initialize global data structure if needed
   window.tagSidebarData = window.tagSidebarData || {
     categories: null,
     appCardsData: null,
@@ -172,32 +205,18 @@ function preloadData() {
   const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
 
   // Start requests immediately and store the promises
-  window.tagSidebarData.categoriesPromise = fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
-    headers: {
-      'Cache-Control': forceRefresh ? 'no-cache' : '',
-      'Pragma': forceRefresh ? 'no-cache' : ''
-    }
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Failed to fetch categories: ${response.status}`);
-    }
-    return response.json();
-  }).catch(error => {
+  window.tagSidebarData.categoriesPromise = createFetchRequest(
+    `${dataPath}tmp_tag-categories.json${cacheParam}`,
+    forceRefresh
+  ).catch(error => {
     console.error("Error preloading categories:", error);
     return null;
   });
 
-  window.tagSidebarData.appCardsPromise = fetch(`${dataPath}tmp_app_cards.json${cacheParam}`, {
-    headers: {
-      'Cache-Control': forceRefresh ? 'no-cache' : '',
-      'Pragma': forceRefresh ? 'no-cache' : ''
-    }
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Failed to fetch app cards: ${response.status}`);
-    }
-    return response.json();
-  }).catch(error => {
+  window.tagSidebarData.appCardsPromise = createFetchRequest(
+    `${dataPath}tmp_app_cards.json${cacheParam}`,
+    forceRefresh
+  ).catch(error => {
     console.error("Error preloading app cards:", error);
     return null;
   });
@@ -229,23 +248,21 @@ function preloadData() {
 
 // Initialize UI when data is available
 async function initializeUI() {
-  const isTagsPageResult = isTagsPage();
-  const isHoloHub = window.location.pathname.endsWith('/holohub/');
-  if (!isHoloHub && !isTagsPageResult) {
+  if (!needsSidebar()) {
     console.log("Not on HoloHub root or tags page, skipping sidebar loading");
     makeContentVisible(); // Ensure content is visible
     return;
   }
+
   try {
     await checkForCacheRefreshParam();
 
-    // Get the base URL
-    const baseUrl = getBaseUrl();
-
-    // Create global tag popup instance if it doesn't exist yet
+    // Initialize tag popup
     if (!globalTagPopup) {
       globalTagPopup = new TagPopup();
     }
+
+    // Set up global tag handling function
     window.showAllTags = function(element, allTags) {
       const tags = JSON.parse(allTags);
       if (globalTagPopup) {
@@ -279,30 +296,13 @@ async function initializeUI() {
     }
 
     // Render sidebar only once
-    renderSidebar(categories, appCardsData);
+    renderSidebar(categories);
 
     // Handle initial URL parameters - only updates the highlights
     handleCategoryParamChange();
 
-    // Handle browser back/forward navigation
-    window.addEventListener('popstate', function(event) {
-      handleCategoryParamChange();
-    });
-
-    // Handle window resize - only add the listener once
-    if (!sidebarCache.initialized) {
-      let resizeTimeout;
-      window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-          const sidebar = sidebarCache.sidebarElement || document.querySelector('.tag-sidebar.md-sidebar');
-          if (sidebar) {
-            sidebar.style.height = `calc(100vh - ${document.querySelector('.md-header').offsetHeight}px)`;
-          }
-        }, 100);
-      });
-      sidebarCache.initialized = true;
-    }
+    // Set up event listeners only once
+    setupEventListeners();
 
     console.log("Tag sidebar ready");
 
@@ -320,7 +320,32 @@ async function initializeUI() {
   }
 }
 
-// Main initialization on DOMContentLoaded - will execute if readystatechange hasn't triggered yet
+// Set up event listeners for the sidebar and window
+function setupEventListeners() {
+  // Only set up once
+  if (sidebarCache.initialized) {
+    return;
+  }
+
+  // Handle browser back/forward navigation
+  window.addEventListener('popstate', handleCategoryParamChange);
+
+  // Handle window resize
+  let resizeTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+      const sidebar = sidebarCache.sidebarElement || document.querySelector('.tag-sidebar.md-sidebar');
+      if (sidebar) {
+        sidebar.style.height = `calc(100vh - ${document.querySelector('.md-header').offsetHeight}px)`;
+      }
+    }, 100);
+  });
+
+  sidebarCache.initialized = true;
+}
+
+// Main initialization on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
   // If preloading hasn't started yet, check if sidebar is needed
   if (!preloadStarted) {
@@ -382,44 +407,28 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
 
   // If we're forcing a refresh or preload failed, make new requests
   if (forceRefresh || !window.tagSidebarData.preloadComplete) {
-    // Add cache buster for forced refresh only
     const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
 
-    // Fetch from server with appropriate cache headers
     try {
       console.log("Fetching data from server with HTTP caching");
 
       // Use Promise.allSettled to handle partial failures
       const responses = await Promise.allSettled([
-        fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
-          headers: {
-            'Cache-Control': forceRefresh ? 'no-cache' : '',
-            'Pragma': forceRefresh ? 'no-cache' : ''
-          }
-        }),
-        fetch(`${dataPath}tmp_app_cards.json${cacheParam}`, {
-          headers: {
-            'Cache-Control': forceRefresh ? 'no-cache' : '',
-            'Pragma': forceRefresh ? 'no-cache' : ''
-          }
-        })
+        createFetchRequest(`${dataPath}tmp_tag-categories.json${cacheParam}`, forceRefresh),
+        createFetchRequest(`${dataPath}tmp_app_cards.json${cacheParam}`, forceRefresh)
       ]);
 
       // Process responses
-      if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
-        data.categories = await responses[0].value.json();
+      if (responses[0].status === 'fulfilled') {
+        data.categories = responses[0].value;
       } else {
-        console.error("Failed to fetch categories:",
-                      responses[0].status === 'rejected' ? responses[0].reason :
-                      `HTTP ${responses[0].value.status}`);
+        console.error("Failed to fetch categories:", responses[0].reason);
       }
 
-      if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
-        data.appCardsData = await responses[1].value.json();
+      if (responses[1].status === 'fulfilled') {
+        data.appCardsData = responses[1].value;
       } else {
-        console.error("Failed to fetch app cards data:",
-                      responses[1].status === 'rejected' ? responses[1].reason :
-                      `HTTP ${responses[1].value.status}`);
+        console.error("Failed to fetch app cards data:", responses[1].reason);
       }
 
       return data;
@@ -435,9 +444,6 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
     appCardsData: window.tagSidebarData.appCardsData
   };
 }
-
-// Global cache state to prevent duplicate loads
-let dataLoadPromise = null;
 
 // Function to handle cache loading with a shared promise
 function loadDataWithCacheShared(dataPath, forceRefresh = false) {
@@ -463,7 +469,7 @@ function loadDataWithCacheShared(dataPath, forceRefresh = false) {
 window.refreshTagSidebarCache = async function() {
   console.log("Force refreshing tag sidebar cache");
   const baseUrl = getBaseUrl();
-  let dataPath = `${baseUrl}_data/`;
+  const dataPath = `${baseUrl}_data/`;
 
   // Clear the existing promise
   dataLoadPromise = null;
@@ -495,119 +501,151 @@ window.refreshTagSidebarCache = async function() {
 // Allow triggering a reload via URL
 function checkForCacheRefreshParam() {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('refresh_cache')) {
-    // Remove the parameter from URL to prevent endless refreshing
-    urlParams.delete('refresh_cache');
-    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-    window.history.replaceState({}, document.title, newUrl);
-
-    // Refresh the cache
-    return window.refreshTagSidebarCache();
+  if (!urlParams.has('refresh_cache')) {
+    return Promise.resolve(false);
   }
-  return Promise.resolve(false);
+
+  // Remove the parameter from URL to prevent endless refreshing
+  urlParams.delete('refresh_cache');
+  const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+  window.history.replaceState({}, document.title, newUrl);
+
+  // Refresh the cache
+  return window.refreshTagSidebarCache();
 }
 
-// Global reference to sidebar elements to avoid repeated querying
-let sidebarCache = {
-  initialized: false,
-  sidebarElement: null,
-  categoryItems: null,
-  renderedCategories: false
-};
-
-// Function to create and render the sidebar only once
-function renderSidebar(categories, appCardsData) {
+// Create and render the sidebar only once
+function renderSidebar(categories) {
   // Skip if already rendered or no data
-  if (sidebarCache.renderedCategories || !categories || !appCardsData) {
+  if (sidebarCache.renderedCategories || !categories) {
     return sidebarCache.sidebarElement;
   }
 
   console.log("Rendering sidebar structure...");
 
-  let tagSidebar, primarySidebar;
+  const tagSidebar = createSidebarElement();
+  if (!tagSidebar) {
+    return null;
+  }
 
-  primarySidebar = document.querySelector('.md-sidebar--primary');
+  // Build the sidebar content
+  const sidebarContent = document.createElement('div');
+  sidebarContent.className = 'tag-sidebar-content';
+
+  const title = document.createElement('h2');
+  title.textContent = 'Application Categories';
+  sidebarContent.appendChild(title);
+
+  const categoryList = createCategoryList(categories);
+  sidebarContent.appendChild(categoryList);
+  tagSidebar.appendChild(sidebarContent);
+
+  // Cache references to avoid DOM queries later
+  sidebarCache.sidebarElement = tagSidebar;
+  sidebarCache.categoryItems = tagSidebar.querySelectorAll('.tag-category-item');
+  sidebarCache.renderedCategories = true;
+
+  document.body.classList.add('tag-sidebar-ready');
+  console.log("Tag sidebar rendered");
+
+  return tagSidebar;
+}
+
+// Create the sidebar container element
+function createSidebarElement() {
+  // First, try to find the primary sidebar
+  const primarySidebar = document.querySelector('.md-sidebar--primary');
+
   if (primarySidebar) {
     console.log("Found primary sidebar");
 
-    tagSidebar = primarySidebar.querySelector('.tag-sidebar');
+    // Check if tag sidebar already exists
+    let tagSidebar = primarySidebar.querySelector('.tag-sidebar');
     if (tagSidebar) {
       console.log("Tag sidebar already exists, skipping creation");
       sidebarCache.sidebarElement = tagSidebar;
       sidebarCache.renderedCategories = true;
       return tagSidebar;
     }
+
+    // Create new tag sidebar
     tagSidebar = document.createElement('div');
     tagSidebar.className = 'tag-sidebar';
+
+    // Find the scroll wrapper or create one
     const scrollWrap = primarySidebar.querySelector('.md-sidebar__scrollwrap');
     if (scrollWrap) {
       scrollWrap.appendChild(tagSidebar);
       console.log("Sidebar inserted into primary sidebar scrollwrap");
     } else {
-      // If no scrollwrap, create one
       const newScrollWrap = document.createElement('div');
       newScrollWrap.className = 'md-sidebar__scrollwrap';
       newScrollWrap.appendChild(tagSidebar);
       primarySidebar.appendChild(newScrollWrap);
       console.log("Created new scrollwrap and inserted sidebar");
     }
-  } else {
-    console.warn("Could not find primary sidebar, creating standalone");
 
-    // Check if tag sidebar already exists
-    tagSidebar = document.querySelector('.tag-sidebar.md-sidebar');
-    if (tagSidebar) {
-      console.log("Standalone tag sidebar already exists, skipping creation");
-      sidebarCache.sidebarElement = tagSidebar;
-      sidebarCache.renderedCategories = true;
-      return tagSidebar;
-    }
-
-    // Create standalone sidebar if primary doesn't exist
-    const mainInner = document.querySelector('.md-main__inner');
-    if (!mainInner) {
-      console.error("Could not find main inner container");
-      return null;
-    }
-
-    // Create a wrapper for the sidebar
-    const sidebarWrapper = document.createElement('div');
-    sidebarWrapper.className = 'tag-sidebar-wrapper';
-    sidebarWrapper.style.position = 'relative';
-
-    tagSidebar = document.createElement('div');
-    tagSidebar.className = 'tag-sidebar md-sidebar md-sidebar--primary';
-
-    // Insert as first child
-    if (mainInner.firstChild) {
-      mainInner.insertBefore(sidebarWrapper, mainInner.firstChild);
-    } else {
-      mainInner.appendChild(sidebarWrapper);
-    }
-    sidebarWrapper.appendChild(tagSidebar);
-    console.log("Created standalone sidebar");
+    primarySidebar.style.display = 'block';
+    return tagSidebar;
   }
 
-  // Build the sidebar content - only do this once
-  const sidebarContent = document.createElement('div');
-  sidebarContent.className = 'tag-sidebar-content';
-  const title = document.createElement('h2');
-  title.textContent = 'Application Categories';
-  sidebarContent.appendChild(title);
+  // If primary sidebar doesn't exist, create standalone sidebar
+  console.warn("Could not find primary sidebar, creating standalone");
+
+  // Check if standalone tag sidebar already exists
+  let tagSidebar = document.querySelector('.tag-sidebar.md-sidebar');
+  if (tagSidebar) {
+    console.log("Standalone tag sidebar already exists, skipping creation");
+    sidebarCache.sidebarElement = tagSidebar;
+    sidebarCache.renderedCategories = true;
+    return tagSidebar;
+  }
+
+  // Find main container
+  const mainInner = document.querySelector('.md-main__inner');
+  if (!mainInner) {
+    console.error("Could not find main inner container");
+    return null;
+  }
+
+  // Create a wrapper and the sidebar
+  const sidebarWrapper = document.createElement('div');
+  sidebarWrapper.className = 'tag-sidebar-wrapper';
+  sidebarWrapper.style.position = 'relative';
+
+  tagSidebar = document.createElement('div');
+  tagSidebar.className = 'tag-sidebar md-sidebar md-sidebar--primary';
+
+  // Insert as first child
+  if (mainInner.firstChild) {
+    mainInner.insertBefore(sidebarWrapper, mainInner.firstChild);
+  } else {
+    mainInner.appendChild(sidebarWrapper);
+  }
+
+  sidebarWrapper.appendChild(tagSidebar);
+  console.log("Created standalone sidebar");
+
+  return tagSidebar;
+}
+
+// Create the category list for the sidebar
+function createCategoryList(categories) {
   const categoryList = document.createElement('ul');
   categoryList.className = 'tag-category-list md-nav__list';
-  const primaryCategories = categories;
-  console.log("Primary categories:", primaryCategories.length);
 
   // Build the tags page URL with the correct base path
   const baseUrl = getBaseUrl();
   const tagsPath = `${baseUrl}tags/`;
-  primaryCategories.forEach(category => {
+
+  categories.forEach(category => {
     // Create category list item
     const categoryItem = document.createElement('li');
     categoryItem.className = 'tag-category-item md-nav__item';
     categoryItem.dataset.category = category.title.toLowerCase();
+
     const appCount = category.count || 0;
+
     const categoryHeader = document.createElement('div');
     categoryHeader.className = 'tag-category-header md-nav__link';
     categoryHeader.innerHTML = `
@@ -636,25 +674,11 @@ function renderSidebar(categories, appCardsData) {
     categoryList.appendChild(categoryItem);
   });
 
-  sidebarContent.appendChild(categoryList);
-  tagSidebar.appendChild(sidebarContent);
-
-  if (primarySidebar) {
-    primarySidebar.style.display = 'block';
-  }
-
-  // Cache references to avoid DOM queries later
-  sidebarCache.sidebarElement = tagSidebar;
-  sidebarCache.categoryItems = tagSidebar.querySelectorAll('.tag-category-item');
-  sidebarCache.renderedCategories = true;
-
-  document.body.classList.add('tag-sidebar-ready');
-
-  console.log("Tag sidebar rendered");
-  return tagSidebar;
+  console.log("Primary categories:", categories.length);
+  return categoryList;
 }
 
-// Separate function to only update the active category highlight
+// Update the active category highlight
 function highlightActiveCategory(categoryName) {
   if (!categoryName || !sidebarCache.renderedCategories) return;
 
@@ -676,45 +700,39 @@ function highlightActiveCategory(categoryName) {
   // Remove active class from all and find matching item
   for (const item of sidebarCache.categoryItems) {
     const header = item.querySelector('.tag-category-header');
-    if (header) {
-      if (item.dataset.category === categoryLower) {
-        header.classList.add('active');
-        activeItem = item;
-      } else if (header.classList.contains('active')) {
-        header.classList.remove('active');
-      }
+    if (!header) continue;
+
+    if (item.dataset.category === categoryLower) {
+      header.classList.add('active');
+      activeItem = item;
+    } else if (header.classList.contains('active')) {
+      header.classList.remove('active');
     }
   }
 
   // Scroll the matching item into view if found
   if (activeItem && sidebarCache.sidebarElement) {
-    const sidebar = sidebarCache.sidebarElement;
-    const itemTop = activeItem.offsetTop;
-    const sidebarScrollTop = sidebar.scrollTop;
-    const sidebarHeight = sidebar.clientHeight;
-
-    // Only scroll if the item isn't fully visible
-    if (itemTop < sidebarScrollTop || itemTop > sidebarScrollTop + sidebarHeight) {
-      // Smooth scroll to position the item in the middle
-      sidebar.scrollTo({
-        top: itemTop - (sidebarHeight / 2),
-        behavior: 'smooth'
-      });
-    }
+    scrollCategoryIntoView(activeItem, sidebarCache.sidebarElement);
   }
 }
 
-// Function to toggle category filter message visibility
-function toggleCategoryFilterMessage(isVisible) {
-  const filterMessage = document.querySelector('.category-filter-message');
-  const resultsSection = document.querySelector('.category-results');
-  if (filterMessage && resultsSection) {
-    filterMessage.style.display = isVisible ? 'block' : 'none';
-    resultsSection.style.display = isVisible ? 'none' : 'block';
+// Scroll category into view
+function scrollCategoryIntoView(item, sidebar) {
+  const itemTop = item.offsetTop;
+  const sidebarScrollTop = sidebar.scrollTop;
+  const sidebarHeight = sidebar.clientHeight;
+
+  // Only scroll if the item isn't fully visible
+  if (itemTop < sidebarScrollTop || itemTop > sidebarScrollTop + sidebarHeight) {
+    // Smooth scroll to position the item in the middle
+    sidebar.scrollTo({
+      top: itemTop - (sidebarHeight / 2),
+      behavior: 'smooth'
+    });
   }
 }
 
-// Function to handle URL parameter changes - now just updates highlights
+// Handle URL parameter changes
 function handleCategoryParamChange() {
   const urlParams = new URLSearchParams(window.location.search);
   const categoryParam = urlParams.get('category');
@@ -729,65 +747,37 @@ function handleCategoryParamChange() {
   }
 }
 
-// Function to check if we're on the tags page
-function isTagsPage() {
-  return window.location.pathname.endsWith('/tags/') ||
-         window.location.pathname.endsWith('/tags') ||
-         window.location.pathname.includes('/tags/index');
+// Toggle category filter message visibility
+function toggleCategoryFilterMessage(isVisible) {
+  const filterMessage = document.querySelector('.category-filter-message');
+  const resultsSection = document.querySelector('.category-results');
+  if (filterMessage && resultsSection) {
+    filterMessage.style.display = isVisible ? 'block' : 'none';
+    resultsSection.style.display = isVisible ? 'none' : 'block';
+  }
 }
 
-// Function to load category content without page reload
+// Load category content without page reload
 async function loadCategoryContent(category) {
   if (!category) return;
 
   console.log(`Loading content for category: ${category}`);
 
   try {
-    // Find or create the main content container
-    let contentContainer = document.querySelector('.category-content');
-    if (!contentContainer) {
-      // Create the container if it doesn't exist
-      contentContainer = document.createElement('div');
-      contentContainer.className = 'category-content';
+    // Find or create the content container
+    const contentContainer = findOrCreateContentContainer();
+    if (!contentContainer) return;
 
-      // Create the required child elements
-      const filterMessage = document.createElement('div');
-      filterMessage.className = 'category-filter-message';
-      filterMessage.textContent = 'Select a category from the sidebar to view applications';
-
-      const resultsSection = document.createElement('div');
-      resultsSection.className = 'category-results';
-      resultsSection.style.display = 'none';
-
-      const cardsContainer = document.createElement('div');
-      cardsContainer.className = 'category-cards';
-
-      // Assemble the structure
-      resultsSection.appendChild(cardsContainer);
-      contentContainer.appendChild(filterMessage);
-      contentContainer.appendChild(resultsSection);
-
-      // Find the main content area and insert our container
-      const mainContent = document.querySelector('.md-content__inner');
-      if (mainContent) {
-        mainContent.appendChild(contentContainer);
-      } else {
-        console.error("Could not find main content area");
-        return;
-      }
-    }
-
-    // Get references to message and results sections
-    const filterMessage = contentContainer.querySelector('.category-filter-message');
+    // Get references to child elements
     const resultsSection = contentContainer.querySelector('.category-results');
     const cardsContainer = contentContainer.querySelector('.category-cards');
 
-    if (!filterMessage || !resultsSection || !cardsContainer) {
+    if (!resultsSection || !cardsContainer) {
       console.error("Could not find required content elements");
       return;
     }
 
-    // Add loading indicator
+    // Show loading state
     contentContainer.classList.add('loading');
     toggleCategoryFilterMessage(false);
     cardsContainer.innerHTML = '<div class="loading-message">Loading applications...</div>';
@@ -829,7 +819,46 @@ async function loadCategoryContent(category) {
   }
 }
 
-// Function to render category content
+// Find or create the content container
+function findOrCreateContentContainer() {
+  let contentContainer = document.querySelector('.category-content');
+  if (contentContainer) {
+    return contentContainer;
+  }
+
+  // Create the container if it doesn't exist
+  contentContainer = document.createElement('div');
+  contentContainer.className = 'category-content';
+
+  // Create the required child elements
+  const filterMessage = document.createElement('div');
+  filterMessage.className = 'category-filter-message';
+  filterMessage.textContent = 'Select a category from the sidebar to view applications';
+
+  const resultsSection = document.createElement('div');
+  resultsSection.className = 'category-results';
+  resultsSection.style.display = 'none';
+
+  const cardsContainer = document.createElement('div');
+  cardsContainer.className = 'category-cards';
+
+  // Assemble the structure
+  resultsSection.appendChild(cardsContainer);
+  contentContainer.appendChild(filterMessage);
+  contentContainer.appendChild(resultsSection);
+
+  // Find the main content area and insert our container
+  const mainContent = document.querySelector('.md-content__inner');
+  if (mainContent) {
+    mainContent.appendChild(contentContainer);
+    return contentContainer;
+  }
+
+  console.error("Could not find main content area");
+  return null;
+}
+
+// Render category content
 function renderCategoryContent(container, matchingCategory, appCardsData) {
   // Filter apps based on the matching category title
   const categoryLower = matchingCategory.title.toLowerCase();
@@ -841,44 +870,61 @@ function renderCategoryContent(container, matchingCategory, appCardsData) {
   // Display the results
   if (filteredApps.length === 0) {
     container.innerHTML = '<p>No applications found for this category.</p>';
-  } else {
-    container.innerHTML = '';
-
-    // Add category header
-    const categorySection = document.createElement('div');
-    categorySection.className = 'category-section';
-
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'category-header';
-    categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
-
-    categorySection.appendChild(categoryHeader);
-    container.appendChild(categorySection);
-
-    // Create grid for cards
-    const appGrid = document.createElement('div');
-    appGrid.className = 'app-cards';
-
-    // Sort apps alphabetically
-    filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
-
-    // Create app cards
-    filteredApps.forEach(([appName, appData]) => {
-      const card = createAppCard(appName, appData.tags, appData, baseUrl);
-      appGrid.appendChild(card);
-    });
-
-    container.appendChild(appGrid);
+    return;
   }
+
+  container.innerHTML = '';
+
+  // Add category header
+  const categorySection = document.createElement('div');
+  categorySection.className = 'category-section';
+
+  const categoryHeader = document.createElement('div');
+  categoryHeader.className = 'category-header';
+  categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
+
+  categorySection.appendChild(categoryHeader);
+  container.appendChild(categorySection);
+
+  // Create grid for cards
+  const appGrid = document.createElement('div');
+  appGrid.className = 'app-cards';
+
+  // Sort apps alphabetically
+  filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
+
+  // Create app cards
+  filteredApps.forEach(([appName, appData]) => {
+    const card = createAppCard(appName, appData.tags, appData, baseUrl);
+    appGrid.appendChild(card);
+  });
+
+  container.appendChild(appGrid);
 }
 
-// Method to create an app card with the enhanced tag count functionality
+// Create an app card
 function createAppCard(appName, tags, cardData, baseUrl) {
   const simpleName = appName.split('/').pop(); // Extract just the application name, no path
   const card = document.createElement('div');
   card.className = 'app-card';
 
-  // Create thumbnail element
+  // Add thumbnail
+  const thumbnail = createCardThumbnail(appName, simpleName, cardData);
+
+  // Create details section
+  const details = createCardDetails(cardData, tags);
+
+  // Assemble card
+  card.appendChild(thumbnail);
+  card.appendChild(details);
+  card.addEventListener('click', () => window.location.href = `${baseUrl}${cardData.app_url}`);
+  card.style.cursor = 'pointer';
+
+  return card;
+}
+
+// Create card thumbnail
+function createCardThumbnail(appName, simpleName, cardData) {
   const thumbnail = document.createElement('div');
   thumbnail.className = 'app-thumbnail';
 
@@ -907,15 +953,29 @@ function createAppCard(appName, tags, cardData, baseUrl) {
     thumbnail.appendChild(img);
   }
 
-  // Create details section
+  return thumbnail;
+}
+
+// Create card details
+function createCardDetails(cardData, tags) {
   const details = document.createElement('div');
   details.className = 'app-details';
   details.innerHTML = `
     <h5>${cardData.app_title}</h5>
     <p>${cardData.description}</p>
   `;
+
+  const tagsContainer = createTagsContainer(tags);
+  details.appendChild(tagsContainer);
+
+  return details;
+}
+
+// Create tags container
+function createTagsContainer(tags) {
   const tagsContainer = document.createElement('div');
   tagsContainer.className = 'app-tags';
+
   // Add up to 3 tags
   tags.slice(0, 3).forEach(tag => {
     const tagSpan = document.createElement('span');
@@ -945,34 +1005,33 @@ function createAppCard(appName, tags, cardData, baseUrl) {
     tagsContainer.appendChild(tagCount);
   }
 
-  details.appendChild(tagsContainer);
-  card.appendChild(thumbnail);
-  card.appendChild(details);
-  card.addEventListener('click', () => window.location.href = `${baseUrl}${cardData.app_url}`);
-  card.style.cursor = 'pointer';
-
-  return card;
+  return tagsContainer;
 }
 
-// Function to filter apps by category
+// Filter apps by category
 function filterAppsByCategory(appCardsData, categoryLower) {
   // Find the category in the categories data
   const categories = window.tagSidebarData.categories;
   const matchingCategory = categories.find(cat =>
     cat.title.toLowerCase() === categoryLower
   );
+
   if (!matchingCategory || !matchingCategory.ids) {
     return [];
   }
+
   const categoryIds = matchingCategory.ids.map(id => id.toLowerCase());
+
   return Object.entries(appCardsData)
     .filter(([appName, appData]) => {
       const appTitle = (appData.app_title || appName).toLowerCase();
-      return categoryIds.some(id => appTitle === id || appTitle.includes(id) || id.includes(appTitle));
+      return categoryIds.some(id =>
+        appTitle === id || appTitle.includes(id) || id.includes(appTitle)
+      );
     });
 }
 
-// Function to get card data for an app
+// Get card data for an app
 function getCardData(appName, tags, category, appCardsData) {
   return appCardsData[appName] || {
     name: appName,
@@ -1008,11 +1067,14 @@ class TagPopup {
     document.body.appendChild(this.element);
 
     // Add global click handler to close popup when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!this.element.contains(e.target) && !e.target.classList.contains('tag-count')) {
-        this.hide();
-      }
-    });
+    document.addEventListener('click', this.handleOutsideClick.bind(this));
+  }
+
+  // Handle clicks outside the popup
+  handleOutsideClick(e) {
+    if (!this.element.contains(e.target) && !e.target.classList.contains('tag-count')) {
+      this.hide();
+    }
   }
 
   // Show the popup with the given tags array near the target element
@@ -1041,9 +1103,15 @@ class TagPopup {
       });
       content.appendChild(tagEl);
     });
+
     this.element.appendChild(content);
 
     // Position the popup near the target element
+    this.positionPopup(targetElement);
+  }
+
+  // Position the popup relative to the target element
+  positionPopup(targetElement) {
     const rect = targetElement.getBoundingClientRect();
     this.element.style.top = (rect.bottom + window.scrollY + 8) + 'px';
     this.element.style.left = (rect.left + window.scrollX) + 'px';
@@ -1055,6 +1123,3 @@ class TagPopup {
     this.element.style.display = 'none';
   }
 }
-
-// Initialize the global tag popup instance
-let globalTagPopup;
