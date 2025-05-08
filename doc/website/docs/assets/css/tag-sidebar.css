@@ -105,16 +105,16 @@
 .app-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem;
-  margin-top: 0.4rem;
+  gap: 0.1rem;
+  margin-top: 0.2rem;
 }
 
 .app-tag, .tag, .tags-popup-tag {
   display: inline-block;
-  padding: 0.15rem 0.4rem;
+  padding: 0.1rem 0.3rem;
   background-color: var(--md-accent-fg-color--transparent);
   border-radius: 3px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--md-accent-fg-color);
   font-weight: 600;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -130,10 +130,10 @@
 
 .tag-count {
   display: inline-block;
-  padding: 0.15rem 0.4rem;
+  padding: 0.1rem 0.3rem;
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--md-accent-fg-color);
   font-weight: 600;
   /* border: 1px solid var(--md-accent-fg-color--transparent); */
@@ -203,8 +203,8 @@
 /* App Cards */
 .app-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
   margin: 1.5rem 0;
 }
 
@@ -227,7 +227,7 @@
 }
 
 .app-thumbnail {
-  height: 160px;
+  height: 130px;
   background-size: cover;
   background-position: center;
   position: relative;
@@ -276,21 +276,21 @@
 }
 
 .app-details {
-  padding: 0.8rem;
+  padding: 0.6rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
 
 .app-details h5 {
-  margin: 0 0 0.5rem;
-  font-size: 0.8rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
   color: var(--md-default-fg-color);
   font-weight: 600;
 }
 
 .app-details p {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
   font-size: var(--tag-sidebar-font-size);
   color: var(--md-default-fg-color--light);
   line-height: 1.2;
@@ -359,15 +359,15 @@
 .tags-popup-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .tags-popup-tag {
   display: inline-block;
-  padding: 0.15rem 0.4rem;
+  padding: 0.1rem 0.3rem;
   background-color: var(--md-accent-fg-color--transparent);
   border-radius: 3px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--md-accent-fg-color);
   font-weight: 600;
   border: 1px solid var(--md-accent-fg-color--transparent);
