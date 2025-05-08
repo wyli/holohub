@@ -23,7 +23,7 @@ let cacheBuster = '';
       transition: opacity 0.3s ease-in-out;
     }
 
-    body.tag-sidebar-ready .md-content__inner {
+    body.content-ready .md-content__inner {
       opacity: 1;
     }
 
@@ -99,9 +99,31 @@ function createLoadingIndicator() {
 let loading = null;
 let preloadStarted = false;
 
+// Function to check if we're on a page that needs the sidebar
+function needsSidebar() {
+  const isTagsPageResult = isTagsPage();
+  const isHoloHub = window.location.pathname.endsWith('/holohub/');
+  return isHoloHub || isTagsPageResult;
+}
+
+// Ensure content is visible regardless of sidebar status
+function makeContentVisible() {
+  document.body.classList.add('content-ready');
+  if (loading) {
+    loading.hide();
+  }
+}
+
 // Start preloading as early as possible during script parsing
 document.addEventListener('readystatechange', function() {
   if (document.readyState === 'interactive' && !preloadStarted) {
+    // Check if this page needs the sidebar before loading data
+    if (!needsSidebar()) {
+      console.log("Not on HoloHub root or tags page, skipping sidebar loading");
+      makeContentVisible(); // Ensure content is visible
+      return;
+    }
+
     preloadStarted = true;
     loading = createLoadingIndicator();
     preloadData();
@@ -110,9 +132,15 @@ document.addEventListener('readystatechange', function() {
 
 // Begin preload immediately if document is already interactive or complete
 if ((document.readyState === 'interactive' || document.readyState === 'complete') && !preloadStarted) {
-  preloadStarted = true;
-  loading = createLoadingIndicator();
-  preloadData();
+  // Check if this page needs the sidebar before loading data
+  if (needsSidebar()) {
+    preloadStarted = true;
+    loading = createLoadingIndicator();
+    preloadData();
+  } else {
+    console.log("Not on HoloHub root or tags page, skipping sidebar loading");
+    makeContentVisible(); // Ensure content is visible
+  }
 }
 
 // Immediately start preloading data as early as possible
@@ -201,18 +229,18 @@ function preloadData() {
 
 // Initialize UI when data is available
 async function initializeUI() {
+  const isTagsPageResult = isTagsPage();
+  const isHoloHub = window.location.pathname.endsWith('/holohub/');
+  if (!isHoloHub && !isTagsPageResult) {
+    console.log("Not on HoloHub root or tags page, skipping sidebar loading");
+    makeContentVisible(); // Ensure content is visible
+    return;
+  }
   try {
     await checkForCacheRefreshParam();
 
     // Get the base URL
     const baseUrl = getBaseUrl();
-
-    const isTagsPageResult = isTagsPage();
-    const isHoloHub = window.location.pathname.endsWith('/holohub/');
-    if (!isHoloHub && !isTagsPageResult) {
-      console.log("Not on HoloHub root or tags page, skipping sidebar loading");
-      return;
-    }
 
     // Create global tag popup instance if it doesn't exist yet
     if (!globalTagPopup) {
@@ -280,6 +308,7 @@ async function initializeUI() {
 
     // Mark the body as ready to trigger CSS transitions
     document.body.classList.add('tag-sidebar-ready');
+    document.body.classList.add('content-ready');
 
     // Hide loading indicator
     if (loading) {
@@ -293,11 +322,16 @@ async function initializeUI() {
 
 // Main initialization on DOMContentLoaded - will execute if readystatechange hasn't triggered yet
 document.addEventListener('DOMContentLoaded', function() {
-  // If preloading hasn't started yet, start it now
+  // If preloading hasn't started yet, check if sidebar is needed
   if (!preloadStarted) {
-    preloadStarted = true;
-    loading = createLoadingIndicator();
-    preloadData();
+    if (needsSidebar()) {
+      preloadStarted = true;
+      loading = createLoadingIndicator();
+      preloadData();
+    } else {
+      console.log("Not on HoloHub root or tags page, skipping sidebar loading");
+      makeContentVisible(); // Ensure content is visible
+    }
   }
 
   // If data is already preloaded, initialize the UI
@@ -490,113 +524,133 @@ function renderSidebar(categories, appCardsData) {
 
   console.log("Rendering sidebar structure...");
 
-  // Find or create sidebar element
-  let tagSidebar = document.querySelector('.tag-sidebar');
+  let tagSidebar, primarySidebar;
 
-  if (!tagSidebar) {
-    // Create new sidebar
-    const primarySidebar = document.querySelector('.md-sidebar--primary');
+  primarySidebar = document.querySelector('.md-sidebar--primary');
+  if (primarySidebar) {
+    console.log("Found primary sidebar");
 
-    if (primarySidebar) {
-      // Use existing primary sidebar
-      tagSidebar = document.createElement('div');
-      tagSidebar.className = 'tag-sidebar';
-
-      const scrollWrap = primarySidebar.querySelector('.md-sidebar__scrollwrap') ||
-                        (function() {
-                          const newScrollWrap = document.createElement('div');
-                          newScrollWrap.className = 'md-sidebar__scrollwrap';
-                          primarySidebar.appendChild(newScrollWrap);
-                          return newScrollWrap;
-                        })();
-
-      scrollWrap.appendChild(tagSidebar);
-      primarySidebar.style.display = 'block';
-    } else {
-      // Create standalone sidebar
-      const mainInner = document.querySelector('.md-main__inner');
-      if (!mainInner) {
-        console.error("Could not find main inner container");
-        return null;
-      }
-
-      const sidebarWrapper = document.createElement('div');
-      sidebarWrapper.className = 'tag-sidebar-wrapper';
-      sidebarWrapper.style.position = 'relative';
-
-      tagSidebar = document.createElement('div');
-      tagSidebar.className = 'tag-sidebar md-sidebar md-sidebar--primary';
-
-      if (mainInner.firstChild) {
-        mainInner.insertBefore(sidebarWrapper, mainInner.firstChild);
-      } else {
-        mainInner.appendChild(sidebarWrapper);
-      }
-
-      sidebarWrapper.appendChild(tagSidebar);
+    tagSidebar = primarySidebar.querySelector('.tag-sidebar');
+    if (tagSidebar) {
+      console.log("Tag sidebar already exists, skipping creation");
+      sidebarCache.sidebarElement = tagSidebar;
+      sidebarCache.renderedCategories = true;
+      return tagSidebar;
     }
+    tagSidebar = document.createElement('div');
+    tagSidebar.className = 'tag-sidebar';
+    const scrollWrap = primarySidebar.querySelector('.md-sidebar__scrollwrap');
+    if (scrollWrap) {
+      scrollWrap.appendChild(tagSidebar);
+      console.log("Sidebar inserted into primary sidebar scrollwrap");
+    } else {
+      // If no scrollwrap, create one
+      const newScrollWrap = document.createElement('div');
+      newScrollWrap.className = 'md-sidebar__scrollwrap';
+      newScrollWrap.appendChild(tagSidebar);
+      primarySidebar.appendChild(newScrollWrap);
+      console.log("Created new scrollwrap and inserted sidebar");
+    }
+  } else {
+    console.warn("Could not find primary sidebar, creating standalone");
+
+    // Check if tag sidebar already exists
+    tagSidebar = document.querySelector('.tag-sidebar.md-sidebar');
+    if (tagSidebar) {
+      console.log("Standalone tag sidebar already exists, skipping creation");
+      sidebarCache.sidebarElement = tagSidebar;
+      sidebarCache.renderedCategories = true;
+      return tagSidebar;
+    }
+
+    // Create standalone sidebar if primary doesn't exist
+    const mainInner = document.querySelector('.md-main__inner');
+    if (!mainInner) {
+      console.error("Could not find main inner container");
+      return null;
+    }
+
+    // Create a wrapper for the sidebar
+    const sidebarWrapper = document.createElement('div');
+    sidebarWrapper.className = 'tag-sidebar-wrapper';
+    sidebarWrapper.style.position = 'relative';
+
+    tagSidebar = document.createElement('div');
+    tagSidebar.className = 'tag-sidebar md-sidebar md-sidebar--primary';
+
+    // Insert as first child
+    if (mainInner.firstChild) {
+      mainInner.insertBefore(sidebarWrapper, mainInner.firstChild);
+    } else {
+      mainInner.appendChild(sidebarWrapper);
+    }
+    sidebarWrapper.appendChild(tagSidebar);
+    console.log("Created standalone sidebar");
   }
 
-  // Build simplified category list
-  const baseUrl = getBaseUrl();
-  const tagsPath = `${baseUrl}tags/`;
-
-  // Create sidebar content with title
-  const content = document.createElement('div');
-  content.className = 'tag-sidebar-content';
-  content.innerHTML = '<h2>Application Categories</h2>';
-
-  // Create category list
+  // Build the sidebar content - only do this once
+  const sidebarContent = document.createElement('div');
+  sidebarContent.className = 'tag-sidebar-content';
+  const title = document.createElement('h2');
+  title.textContent = 'Application Categories';
+  sidebarContent.appendChild(title);
   const categoryList = document.createElement('ul');
   categoryList.className = 'tag-category-list md-nav__list';
+  const primaryCategories = categories;
+  console.log("Primary categories:", primaryCategories.length);
 
-  // Sort categories alphabetically for better UX
-  const sortedCategories = [...categories].sort((a, b) => a.title.localeCompare(b.title));
-
-  // Add categories to list
-  sortedCategories.forEach(category => {
-    const count = category.count || 0;
+  // Build the tags page URL with the correct base path
+  const baseUrl = getBaseUrl();
+  const tagsPath = `${baseUrl}tags/`;
+  primaryCategories.forEach(category => {
+    // Create category list item
     const categoryItem = document.createElement('li');
     categoryItem.className = 'tag-category-item md-nav__item';
     categoryItem.dataset.category = category.title.toLowerCase();
-
-    // Create simplified category header with icon, title, and count
-    categoryItem.innerHTML = `
-      <div class="tag-category-header md-nav__link">
-        <span class="material-icons tag-category-icon">${category.icon}</span>
-        <span class="tag-category-title">${category.title}</span>
-        <span class="tag-category-count">(${count})</span>
-      </div>
+    const appCount = category.count || 0;
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'tag-category-header md-nav__link';
+    categoryHeader.innerHTML = `
+      <span class="material-icons tag-category-icon">${category.icon}</span>
+      <span class="tag-category-title">${category.title}</span>
+      <span class="tag-category-count">(${appCount})</span>
     `;
 
-    // Add click event to navigate to category
-    const header = categoryItem.querySelector('.tag-category-header');
-    if (header) {
-      // Navigate on click
-      header.addEventListener('click', e => {
-        e.preventDefault();
-        window.location.href = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
-      });
+    // Add event listeners
+    categoryHeader.addEventListener('click', function(e) {
+      e.preventDefault();
+      const newUrl = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
+      window.location.href = newUrl;
+    });
 
-      // Add hover effects
-      header.addEventListener('mouseenter', () => header.classList.add('hover'));
-      header.addEventListener('mouseleave', () => header.classList.remove('hover'));
-    }
+    // Add hover effect for better UX
+    categoryHeader.addEventListener('mouseenter', function() {
+      this.classList.add('hover');
+    });
 
+    categoryHeader.addEventListener('mouseleave', function() {
+      this.classList.remove('hover');
+    });
+
+    categoryItem.appendChild(categoryHeader);
     categoryList.appendChild(categoryItem);
   });
 
-  content.appendChild(categoryList);
-  tagSidebar.appendChild(content);
+  sidebarContent.appendChild(categoryList);
+  tagSidebar.appendChild(sidebarContent);
 
-  // Cache references and mark as rendered
+  if (primarySidebar) {
+    primarySidebar.style.display = 'block';
+  }
+
+  // Cache references to avoid DOM queries later
   sidebarCache.sidebarElement = tagSidebar;
-  sidebarCache.categoryItems = categoryList.querySelectorAll('.tag-category-item');
+  sidebarCache.categoryItems = tagSidebar.querySelectorAll('.tag-category-item');
   sidebarCache.renderedCategories = true;
 
   document.body.classList.add('tag-sidebar-ready');
-  console.log("Tag sidebar rendered");
 
+  console.log("Tag sidebar rendered");
   return tagSidebar;
 }
 
@@ -775,45 +829,47 @@ async function loadCategoryContent(category) {
   }
 }
 
-// Simplified function to render category content
+// Function to render category content
 function renderCategoryContent(container, matchingCategory, appCardsData) {
-  if (!container || !matchingCategory || !appCardsData) return;
-
-  // Filter apps based on the category
+  // Filter apps based on the matching category title
   const categoryLower = matchingCategory.title.toLowerCase();
   const filteredApps = filterAppsByCategory(appCardsData, categoryLower);
 
   // Get base URL
   const baseUrl = getBaseUrl();
 
-  // Clear previous content
-  container.innerHTML = '';
-
+  // Display the results
   if (filteredApps.length === 0) {
     container.innerHTML = '<p>No applications found for this category.</p>';
-    return;
+  } else {
+    container.innerHTML = '';
+
+    // Add category header
+    const categorySection = document.createElement('div');
+    categorySection.className = 'category-section';
+
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'category-header';
+    categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
+
+    categorySection.appendChild(categoryHeader);
+    container.appendChild(categorySection);
+
+    // Create grid for cards
+    const appGrid = document.createElement('div');
+    appGrid.className = 'app-cards';
+
+    // Sort apps alphabetically
+    filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
+
+    // Create app cards
+    filteredApps.forEach(([appName, appData]) => {
+      const card = createAppCard(appName, appData.tags, appData, baseUrl);
+      appGrid.appendChild(card);
+    });
+
+    container.appendChild(appGrid);
   }
-
-  // Add category header
-  const header = document.createElement('h2');
-  header.className = 'category-title';
-  header.textContent = matchingCategory.title;
-  container.appendChild(header);
-
-  // Create grid for cards
-  const appGrid = document.createElement('div');
-  appGrid.className = 'app-cards';
-
-  // Sort apps alphabetically
-  filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
-
-  // Create app cards
-  filteredApps.forEach(([appName, appData]) => {
-    const card = createAppCard(appName, appData.tags, appData, baseUrl);
-    appGrid.appendChild(card);
-  });
-
-  container.appendChild(appGrid);
 }
 
 // Method to create an app card with the enhanced tag count functionality
