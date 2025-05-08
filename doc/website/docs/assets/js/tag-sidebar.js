@@ -143,22 +143,24 @@ if (document.readyState === 'interactive' || document.readyState === 'complete')
 }
 
 // Function to fetch data with proper caching parameters
-function fetchDataWithCache(url, forceRefresh = false) {
+async function fetchDataWithCache(url, forceRefresh = false) {
   const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
-  return fetch(`${url}${cacheParam}`, {
-    headers: {
-      'Cache-Control': forceRefresh ? 'no-cache' : '',
-      'Pragma': forceRefresh ? 'no-cache' : ''
-    }
-  }).then(response => {
+  try {
+    const response = await fetch(`${url}${cacheParam}`, {
+      headers: {
+        'Cache-Control': forceRefresh ? 'no-cache' : '',
+        'Pragma': forceRefresh ? 'no-cache' : ''
+      }
+    });
+
     if (!response.ok) {
       throw new Error(`Failed to fetch data: ${response.status}`);
     }
-    return response.json();
-  }).catch(error => {
+    return await response.json();
+  } catch (error) {
     console.error(`Error fetching ${url}:`, error);
     return null;
-  });
+  }
 }
 
 function getUrlParams() {
@@ -313,7 +315,6 @@ async function initializeUI() {
 
     // Handle initial URL parameters - only updates the highlights
     handleCategoryParamChange();
-
     // Handle browser back/forward navigation
     window.addEventListener('popstate', function(event) {
       handleCategoryParamChange();
