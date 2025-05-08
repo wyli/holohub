@@ -111,29 +111,108 @@ function makeContentVisible() {
   }
 }
 
-document.addEventListener('readystatechange', function() {
-  if (document.readyState === 'interactive' && !preloadStarted) {
-    if (!needsSidebar()) {
-      makeContentVisible(); // Ensure content is visible
-      return;
-    }
-    preloadStarted = true;
-    loading = createLoadingIndicator();
-    preloadData();
+// Unified function to initialize sidebar if needed
+function initializeIfNeeded() {
+  if (preloadStarted) {
+    return; // Already initialized or in progress
   }
-}, { once: true });
 
-// Begin preload immediately if document is already interactive or complete
-if ((document.readyState === 'interactive' || document.readyState === 'complete') && !preloadStarted) {
-  // Check if this page needs the sidebar before loading data
   if (needsSidebar()) {
     preloadStarted = true;
     loading = createLoadingIndicator();
     preloadData();
   } else {
-    makeContentVisible(); // Ensure content is visible
+    makeContentVisible();
   }
 }
+
+document.addEventListener('readystatechange', function() {
+  if (document.readyState === 'interactive') {
+    initializeIfNeeded();
+  }
+}, { once: true });
+
+// Begin preload immediately if document is already interactive or complete
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  initializeIfNeeded();
+}
+
+// Function to fetch data with proper caching parameters
+function fetchDataWithCache(url, forceRefresh = false) {
+  const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
+  return fetch(`${url}${cacheParam}`, {
+    headers: {
+      'Cache-Control': forceRefresh ? 'no-cache' : '',
+      'Pragma': forceRefresh ? 'no-cache' : ''
+    }
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status}`);
+    }
+    return response.json();
+  }).catch(error => {
+    console.error(`Error fetching ${url}:`, error);
+    return null;
+  });
+}
+
+// Function to parse URL parameters
+function getUrlParams() {
+  return new URLSearchParams(window.location.search);
+}
+
+// Function to check if a cache refresh is requested
+function isForceRefreshRequested() {
+  return getUrlParams().has('refresh_cache');
+}
+
+// Allow triggering a reload via URL
+function checkForCacheRefreshParam() {
+  if (isForceRefreshRequested() && needsSidebar()) {
+    // Remove the parameter from URL to prevent endless refreshing
+    const urlParams = getUrlParams();
+    urlParams.delete('refresh_cache');
+    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+    window.history.replaceState({}, document.title, newUrl);
+
+    // Refresh the cache
+    return window.refreshTagSidebarCache();
+  }
+  return Promise.resolve(false);
+}
+
+// Add a function to force refresh the cache
+window.refreshTagSidebarCache = async function() {
+  console.log("Force refreshing tag sidebar cache");
+  const baseUrl = getBaseUrl();
+  let dataPath = `${baseUrl}_data/`;
+
+  // Clear the existing promise
+  dataLoadPromise = null;
+
+  // Reset global data
+  window.tagSidebarData = {
+    categories: null,
+    appCardsData: null,
+    isLoading: true,
+    preloadStarted: false,
+    preloadComplete: false
+  };
+
+  try {
+    const data = await loadDataWithCacheShared(dataPath, true);
+    window.tagSidebarData.categories = data.categories;
+    window.tagSidebarData.appCardsData = data.appCardsData;
+    window.tagSidebarData.preloadComplete = true;
+    console.log("Cache refresh complete");
+    return true;
+  } catch (error) {
+    console.error("Cache refresh failed:", error);
+    return false;
+  } finally {
+    window.tagSidebarData.isLoading = false;
+  }
+};
 
 // Immediately start preloading data as early as possible
 function preloadData() {
@@ -160,39 +239,10 @@ function preloadData() {
   // Get the base URL early
   const baseUrl = getBaseUrl();
   const dataPath = `${baseUrl}_data/`;
-  const urlParams = new URLSearchParams(window.location.search);
-  const forceRefresh = urlParams.has('refresh_cache');
-  const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
+  const forceRefresh = isForceRefreshRequested();
 
-  window.tagSidebarData.categoriesPromise = fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
-    headers: {
-      'Cache-Control': forceRefresh ? 'no-cache' : '',
-      'Pragma': forceRefresh ? 'no-cache' : ''
-    }
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Failed to fetch categories: ${response.status}`);
-    }
-    return response.json();
-  }).catch(error => {
-    console.error("Error preloading categories:", error);
-    return null;
-  });
-
-  window.tagSidebarData.appCardsPromise = fetch(`${dataPath}tmp_app_cards.json${cacheParam}`, {
-    headers: {
-      'Cache-Control': forceRefresh ? 'no-cache' : '',
-      'Pragma': forceRefresh ? 'no-cache' : ''
-    }
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Failed to fetch app cards: ${response.status}`);
-    }
-    return response.json();
-  }).catch(error => {
-    console.error("Error preloading app cards:", error);
-    return null;
-  });
+  window.tagSidebarData.categoriesPromise = fetchDataWithCache(`${dataPath}tmp_tag-categories.json`, forceRefresh);
+  window.tagSidebarData.appCardsPromise = fetchDataWithCache(`${dataPath}tmp_app_cards.json`, forceRefresh);
 
   // Process both promises together to resolve data
   Promise.allSettled([
@@ -307,15 +357,8 @@ async function initializeUI() {
 
 // Main initialization on DOMContentLoaded - will execute if readystatechange hasn't triggered yet
 document.addEventListener('DOMContentLoaded', function() {
-  if (!preloadStarted) {
-    if (needsSidebar()) {
-      preloadStarted = true;
-      loading = createLoadingIndicator();
-      preloadData();
-    } else {
-      makeContentVisible(); // Ensure content is visible
-    }
-  }
+  initializeIfNeeded();
+
   if (window.tagSidebarData && window.tagSidebarData.preloadComplete) {
     initializeUI();
   }
@@ -355,42 +398,16 @@ async function loadDataWithCache(dataPath, forceRefresh = false) {
   }
 
   if (forceRefresh || !window.tagSidebarData.preloadComplete) {
-    const cacheParam = forceRefresh ? `?v=${Date.now()}` : '';
-
     try {
       console.log("Fetching data from server with HTTP caching");
 
-      const responses = await Promise.allSettled([
-        fetch(`${dataPath}tmp_tag-categories.json${cacheParam}`, {
-          headers: {
-            'Cache-Control': forceRefresh ? 'no-cache' : '',
-            'Pragma': forceRefresh ? 'no-cache' : ''
-          }
-        }),
-        fetch(`${dataPath}tmp_app_cards.json${cacheParam}`, {
-          headers: {
-            'Cache-Control': forceRefresh ? 'no-cache' : '',
-            'Pragma': forceRefresh ? 'no-cache' : ''
-          }
-        })
+      const [categoriesData, appCardsData] = await Promise.all([
+        fetchDataWithCache(`${dataPath}tmp_tag-categories.json`, forceRefresh),
+        fetchDataWithCache(`${dataPath}tmp_app_cards.json`, forceRefresh)
       ]);
 
-      // Process responses
-      if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
-        data.categories = await responses[0].value.json();
-      } else {
-        console.error("Failed to fetch categories:",
-                      responses[0].status === 'rejected' ? responses[0].reason :
-                      `HTTP ${responses[0].value.status}`);
-      }
-
-      if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
-        data.appCardsData = await responses[1].value.json();
-      } else {
-        console.error("Failed to fetch app cards data:",
-                      responses[1].status === 'rejected' ? responses[1].reason :
-                      `HTTP ${responses[1].value.status}`);
-      }
+      data.categories = categoriesData;
+      data.appCardsData = appCardsData;
 
       return data;
     } catch (error) {
@@ -423,54 +440,6 @@ function loadDataWithCacheShared(dataPath, forceRefresh = false) {
   return dataLoadPromise;
 }
 
-// Add a function to force refresh the cache
-window.refreshTagSidebarCache = async function() {
-  console.log("Force refreshing tag sidebar cache");
-  const baseUrl = getBaseUrl();
-  let dataPath = `${baseUrl}_data/`;
-
-  // Clear the existing promise
-  dataLoadPromise = null;
-
-  // Reset global data
-  window.tagSidebarData = {
-    categories: null,
-    appCardsData: null,
-    isLoading: true,
-    preloadStarted: false,
-    preloadComplete: false
-  };
-
-  try {
-    const data = await loadDataWithCacheShared(dataPath, true);
-    window.tagSidebarData.categories = data.categories;
-    window.tagSidebarData.appCardsData = data.appCardsData;
-    window.tagSidebarData.preloadComplete = true;
-    console.log("Cache refresh complete");
-    return true;
-  } catch (error) {
-    console.error("Cache refresh failed:", error);
-    return false;
-  } finally {
-    window.tagSidebarData.isLoading = false;
-  }
-};
-
-// Allow triggering a reload via URL
-function checkForCacheRefreshParam() {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('refresh_cache') && needsSidebar()) {
-    // Remove the parameter from URL to prevent endless refreshing
-    urlParams.delete('refresh_cache');
-    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-    window.history.replaceState({}, document.title, newUrl);
-
-    // Refresh the cache
-    return window.refreshTagSidebarCache();
-  }
-  return Promise.resolve(false);
-}
-
 // Global reference to sidebar elements to avoid repeated querying
 let sidebarCache = {
   initialized: false,
@@ -478,6 +447,13 @@ let sidebarCache = {
   categoryItems: null,
   renderedCategories: false
 };
+
+// Function to create tag sidebar element
+function createTagSidebarElement() {
+  const tagSidebar = document.createElement('div');
+  tagSidebar.className = 'tag-sidebar';
+  return tagSidebar;
+}
 
 // Function to create and render the sidebar only once
 function renderSidebar(categories, appCardsData) {
@@ -501,8 +477,8 @@ function renderSidebar(categories, appCardsData) {
       sidebarCache.renderedCategories = true;
       return tagSidebar;
     }
-    tagSidebar = document.createElement('div');
-    tagSidebar.className = 'tag-sidebar';
+
+    tagSidebar = createTagSidebarElement();
     const scrollWrap = primarySidebar.querySelector('.md-sidebar__scrollwrap');
     if (scrollWrap) {
       scrollWrap.appendChild(tagSidebar);
@@ -552,56 +528,8 @@ function renderSidebar(categories, appCardsData) {
     console.log("Created standalone sidebar");
   }
 
-  // Build the sidebar content - only do this once
-  const sidebarContent = document.createElement('div');
-  sidebarContent.className = 'tag-sidebar-content';
-  const title = document.createElement('h2');
-  title.textContent = 'Application Categories';
-  sidebarContent.appendChild(title);
-  const categoryList = document.createElement('ul');
-  categoryList.className = 'tag-category-list md-nav__list';
-  const primaryCategories = categories;
-  console.log("Primary categories:", primaryCategories.length);
-
-  // Build the tags page URL with the correct base path
-  const baseUrl = getBaseUrl();
-  const tagsPath = `${baseUrl}tags/`;
-  primaryCategories.forEach(category => {
-    // Create category list item
-    const categoryItem = document.createElement('li');
-    categoryItem.className = 'tag-category-item md-nav__item';
-    categoryItem.dataset.category = category.title.toLowerCase();
-    const appCount = category.count || 0;
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'tag-category-header md-nav__link';
-    categoryHeader.innerHTML = `
-      <span class="material-icons tag-category-icon">${category.icon}</span>
-      <span class="tag-category-title">${category.title}</span>
-      <span class="tag-category-count">(${appCount})</span>
-    `;
-
-    // Add event listeners
-    categoryHeader.addEventListener('click', function(e) {
-      e.preventDefault();
-      const newUrl = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
-      window.location.href = newUrl;
-    });
-
-    // Add hover effect for better UX
-    categoryHeader.addEventListener('mouseenter', function() {
-      this.classList.add('hover');
-    });
-
-    categoryHeader.addEventListener('mouseleave', function() {
-      this.classList.remove('hover');
-    });
-
-    categoryItem.appendChild(categoryHeader);
-    categoryList.appendChild(categoryItem);
-  });
-
-  sidebarContent.appendChild(categoryList);
-  tagSidebar.appendChild(sidebarContent);
+  // Build the sidebar content
+  renderSidebarContent(tagSidebar, categories);
 
   if (primarySidebar) {
     primarySidebar.style.display = 'block';
@@ -616,6 +544,70 @@ function renderSidebar(categories, appCardsData) {
 
   console.log("Tag sidebar rendered");
   return tagSidebar;
+}
+
+// Function to render sidebar content
+function renderSidebarContent(sidebarElement, categories) {
+  const sidebarContent = document.createElement('div');
+  sidebarContent.className = 'tag-sidebar-content';
+
+  const title = document.createElement('h2');
+  title.textContent = 'Application Categories';
+  sidebarContent.appendChild(title);
+
+  const categoryList = document.createElement('ul');
+  categoryList.className = 'tag-category-list md-nav__list';
+
+  const primaryCategories = categories;
+  console.log("Primary categories:", primaryCategories.length);
+
+  // Build the tags page URL with the correct base path
+  const baseUrl = getBaseUrl();
+  const tagsPath = `${baseUrl}tags/`;
+
+  primaryCategories.forEach(category => {
+    // Create category list item
+    const categoryItem = createCategoryItem(category, tagsPath);
+    categoryList.appendChild(categoryItem);
+  });
+
+  sidebarContent.appendChild(categoryList);
+  sidebarElement.appendChild(sidebarContent);
+}
+
+// Function to create a category item element
+function createCategoryItem(category, tagsPath) {
+  const categoryItem = document.createElement('li');
+  categoryItem.className = 'tag-category-item md-nav__item';
+  categoryItem.dataset.category = category.title.toLowerCase();
+
+  const appCount = category.count || 0;
+  const categoryHeader = document.createElement('div');
+  categoryHeader.className = 'tag-category-header md-nav__link';
+  categoryHeader.innerHTML = `
+    <span class="material-icons tag-category-icon">${category.icon}</span>
+    <span class="tag-category-title">${category.title}</span>
+    <span class="tag-category-count">(${appCount})</span>
+  `;
+
+  // Add event listeners
+  categoryHeader.addEventListener('click', function(e) {
+    e.preventDefault();
+    const newUrl = `${tagsPath}?category=${encodeURIComponent(category.title)}`;
+    window.location.href = newUrl;
+  });
+
+  // Add hover effect for better UX
+  categoryHeader.addEventListener('mouseenter', function() {
+    this.classList.add('hover');
+  });
+
+  categoryHeader.addEventListener('mouseleave', function() {
+    this.classList.remove('hover');
+  });
+
+  categoryItem.appendChild(categoryHeader);
+  return categoryItem;
 }
 
 // Separate function to only update the active category highlight
@@ -680,8 +672,7 @@ function toggleCategoryFilterMessage(isVisible) {
 
 // Function to handle URL parameter changes - now just updates highlights
 function handleCategoryParamChange() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const categoryParam = urlParams.get('category');
+  const categoryParam = getUrlParams().get('category');
 
   if (categoryParam) {
     highlightActiveCategory(categoryParam);
@@ -700,6 +691,46 @@ function isTagsPage() {
          window.location.pathname.includes('/tags/index');
 }
 
+// Function to create or get the category content container
+function getCategoryContentContainer() {
+  let contentContainer = document.querySelector('.category-content');
+  if (contentContainer) {
+    return contentContainer;
+  }
+
+  // Create the container if it doesn't exist
+  contentContainer = document.createElement('div');
+  contentContainer.className = 'category-content';
+
+  // Create the required child elements
+  const filterMessage = document.createElement('div');
+  filterMessage.className = 'category-filter-message';
+  filterMessage.textContent = 'Select a category from the sidebar to view applications';
+
+  const resultsSection = document.createElement('div');
+  resultsSection.className = 'category-results';
+  resultsSection.style.display = 'none';
+
+  const cardsContainer = document.createElement('div');
+  cardsContainer.className = 'category-cards';
+
+  // Assemble the structure
+  resultsSection.appendChild(cardsContainer);
+  contentContainer.appendChild(filterMessage);
+  contentContainer.appendChild(resultsSection);
+
+  // Find the main content area and insert our container
+  const mainContent = document.querySelector('.md-content__inner');
+  if (mainContent) {
+    mainContent.appendChild(contentContainer);
+  } else {
+    console.error("Could not find main content area");
+    return null;
+  }
+
+  return contentContainer;
+}
+
 // Function to load category content without page reload
 async function loadCategoryContent(category) {
   if (!category) return;
@@ -707,38 +738,10 @@ async function loadCategoryContent(category) {
   console.log(`Loading content for category: ${category}`);
 
   try {
-    // Find or create the main content container
-    let contentContainer = document.querySelector('.category-content');
+    // Get or create the content container
+    const contentContainer = getCategoryContentContainer();
     if (!contentContainer) {
-      // Create the container if it doesn't exist
-      contentContainer = document.createElement('div');
-      contentContainer.className = 'category-content';
-
-      // Create the required child elements
-      const filterMessage = document.createElement('div');
-      filterMessage.className = 'category-filter-message';
-      filterMessage.textContent = 'Select a category from the sidebar to view applications';
-
-      const resultsSection = document.createElement('div');
-      resultsSection.className = 'category-results';
-      resultsSection.style.display = 'none';
-
-      const cardsContainer = document.createElement('div');
-      cardsContainer.className = 'category-cards';
-
-      // Assemble the structure
-      resultsSection.appendChild(cardsContainer);
-      contentContainer.appendChild(filterMessage);
-      contentContainer.appendChild(resultsSection);
-
-      // Find the main content area and insert our container
-      const mainContent = document.querySelector('.md-content__inner');
-      if (mainContent) {
-        mainContent.appendChild(contentContainer);
-      } else {
-        console.error("Could not find main content area");
-        return;
-      }
+      return;
     }
 
     // Get references to message and results sections
@@ -805,44 +808,81 @@ function renderCategoryContent(container, matchingCategory, appCardsData) {
   // Display the results
   if (filteredApps.length === 0) {
     container.innerHTML = '<p>No applications found for this category.</p>';
-  } else {
-    container.innerHTML = '';
-
-    // Add category header
-    const categorySection = document.createElement('div');
-    categorySection.className = 'category-section';
-
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'category-header';
-    categoryHeader.innerHTML = `<h2 class="category-title">${matchingCategory.title}</h2>`;
-
-    categorySection.appendChild(categoryHeader);
-    container.appendChild(categorySection);
-
-    // Create grid for cards
-    const appGrid = document.createElement('div');
-    appGrid.className = 'app-cards';
-
-    // Sort apps alphabetically
-    filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
-
-    // Create app cards
-    filteredApps.forEach(([appName, appData]) => {
-      const card = createAppCard(appName, appData.tags, appData, baseUrl);
-      appGrid.appendChild(card);
-    });
-
-    container.appendChild(appGrid);
+    return;
   }
+
+  container.innerHTML = '';
+
+  // Add category header
+  container.appendChild(createCategoryHeader(matchingCategory.title));
+
+  // Create and append app grid with sorted app cards
+  container.appendChild(createAppGrid(filteredApps, baseUrl));
 }
 
-// Method to create an app card with the enhanced tag count functionality
-function createAppCard(appName, tags, cardData, baseUrl) {
-  const simpleName = appName.split('/').pop(); // Extract just the application name, no path
-  const card = document.createElement('div');
-  card.className = 'app-card';
+// Create category header section
+function createCategoryHeader(categoryTitle) {
+  const categorySection = document.createElement('div');
+  categorySection.className = 'category-section';
 
-  // Create thumbnail element
+  const categoryHeader = document.createElement('div');
+  categoryHeader.className = 'category-header';
+  categoryHeader.innerHTML = `<h2 class="category-title">${categoryTitle}</h2>`;
+
+  categorySection.appendChild(categoryHeader);
+  return categorySection;
+}
+
+// Create grid with app cards
+function createAppGrid(filteredApps, baseUrl) {
+  // Create grid for cards
+  const appGrid = document.createElement('div');
+  appGrid.className = 'app-cards';
+
+  // Sort apps alphabetically
+  filteredApps.sort((a, b) => a[0].localeCompare(b[0]));
+
+  // Create app cards
+  filteredApps.forEach(([appName, appData]) => {
+    const card = createAppCard(appName, appData.tags, appData, baseUrl);
+    appGrid.appendChild(card);
+  });
+
+  return appGrid;
+}
+
+// Create a tag element with click handler
+function createTagElement(tag) {
+  const tagSpan = document.createElement('span');
+  tagSpan.className = 'tag';
+  tagSpan.textContent = tag;
+  tagSpan.addEventListener('click', function(e) {
+    e.stopPropagation(); // Prevent parent click events
+    window.handleTagClick(tag);
+    return false;
+  });
+  return tagSpan;
+}
+
+// Create tag count element with popup functionality
+function createTagCountElement(tags) {
+  const tagCount = document.createElement('span');
+  tagCount.className = 'tag-count';
+  tagCount.textContent = `+${tags.length - 3}`;
+  tagCount.setAttribute('data-tags', JSON.stringify(tags));
+  tagCount.addEventListener('click', function(e) {
+    e.stopPropagation(); // Prevent parent click events
+    if (typeof window.showAllTags === 'function') {
+      window.showAllTags(this, this.getAttribute('data-tags'));
+    }
+    return false;
+  });
+  return tagCount;
+}
+
+// Create app thumbnail with placeholder and optional image
+function createAppThumbnail(appName, cardData) {
+  const simpleName = appName.split('/').pop();
   const thumbnail = document.createElement('div');
   thumbnail.className = 'app-thumbnail';
 
@@ -871,7 +911,14 @@ function createAppCard(appName, tags, cardData, baseUrl) {
     thumbnail.appendChild(img);
   }
 
-  // Create details section
+  return thumbnail;
+}
+
+// Method to create an app card with the enhanced tag count functionality
+function createAppCard(appName, tags, cardData, baseUrl) {
+  const card = document.createElement('div');
+  card.className = 'app-card';
+  const thumbnail = createAppThumbnail(appName, cardData);
   const details = document.createElement('div');
   details.className = 'app-details';
   details.innerHTML = `
@@ -880,38 +927,17 @@ function createAppCard(appName, tags, cardData, baseUrl) {
   `;
   const tagsContainer = document.createElement('div');
   tagsContainer.className = 'app-tags';
-  // Add up to 3 tags
   tags.slice(0, 3).forEach(tag => {
-    const tagSpan = document.createElement('span');
-    tagSpan.className = 'tag';
-    tagSpan.textContent = tag;
-    tagSpan.addEventListener('click', function(e) {
-      e.stopPropagation(); // Prevent card click
-      window.handleTagClick(tag);
-      return false;
-    });
-    tagsContainer.appendChild(tagSpan);
+    tagsContainer.appendChild(createTagElement(tag));
   });
-
-  // Add tag count if more than 3
   if (tags.length > 3) {
-    const tagCount = document.createElement('span');
-    tagCount.className = 'tag-count';
-    tagCount.textContent = `+${tags.length - 3}`;
-    tagCount.setAttribute('data-tags', JSON.stringify(tags));
-    tagCount.addEventListener('click', function(e) {
-      e.stopPropagation(); // Prevent card click
-      if (typeof window.showAllTags === 'function') {
-        window.showAllTags(this, this.getAttribute('data-tags'));
-      }
-      return false;
-    });
-    tagsContainer.appendChild(tagCount);
+    tagsContainer.appendChild(createTagCountElement(tags));
   }
-
   details.appendChild(tagsContainer);
   card.appendChild(thumbnail);
   card.appendChild(details);
+
+  // Add click handler to navigate to app page
   card.addEventListener('click', () => window.location.href = `${baseUrl}${cardData.app_url}`);
   card.style.cursor = 'pointer';
 
@@ -920,7 +946,6 @@ function createAppCard(appName, tags, cardData, baseUrl) {
 
 // Function to filter apps by category
 function filterAppsByCategory(appCardsData, categoryLower) {
-  // Find the category in the categories data
   const categories = window.tagSidebarData.categories;
   const matchingCategory = categories.find(cat =>
     cat.title.toLowerCase() === categoryLower
@@ -932,20 +957,10 @@ function filterAppsByCategory(appCardsData, categoryLower) {
   return Object.entries(appCardsData)
     .filter(([appName, appData]) => {
       const appTitle = (appData.app_title || appName).toLowerCase();
-      return categoryIds.some(id => appTitle === id || appTitle.includes(id) || id.includes(appTitle));
+      return categoryIds.some(id =>
+        appTitle === id || appTitle.includes(id) || id.includes(appTitle)
+      );
     });
-}
-
-// Function to get card data for an app
-function getCardData(appName, tags, category, appCardsData) {
-  return appCardsData[appName] || {
-    name: appName,
-    description: "Application for " + category,
-    image_url: null,
-    tags: tags,
-    app_title: appName.split('/').pop() || appName,
-    app_url: `applications/${appName.split('/').pop() || appName}/`
-  };
 }
 
 // Global function for handling tag clicks across the site
@@ -970,18 +985,14 @@ class TagPopup {
     this.element.className = 'tags-popup';
     this.element.style.display = 'none';
     document.body.appendChild(this.element);
-
-    // Add global click handler to close popup when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!this.element.contains(e.target) && !e.target.classList.contains('tag-count')) {
-        this.hide();
-      }
-    });
+    document.addEventListener('click', this.handleOutsideClick.bind(this));
   }
-
-  // Show the popup with the given tags array near the target element
-  show(targetElement, tags) {
-    // Clear the popup content
+  handleOutsideClick(e) {
+    if (!this.element.contains(e.target) && !e.target.classList.contains('tag-count')) {
+      this.hide();
+    }
+  }
+  createPopupContent(tags) {
     this.element.innerHTML = '';
 
     // Add title
@@ -989,11 +1000,14 @@ class TagPopup {
     title.className = 'tags-popup-title';
     title.textContent = 'All Tags';
     this.element.appendChild(title);
-
-    // Add tags
     const content = document.createElement('div');
     content.className = 'tags-popup-content';
+    this.element.appendChild(content);
+    this.addTagsToContent(content, tags);
+  }
 
+  // Add tags to the content container
+  addTagsToContent(content, tags) {
     tags.forEach(tag => {
       const tagEl = document.createElement('span');
       tagEl.className = 'tags-popup-tag';
@@ -1005,16 +1019,20 @@ class TagPopup {
       });
       content.appendChild(tagEl);
     });
-    this.element.appendChild(content);
+  }
 
-    // Position the popup near the target element
-    const rect = targetElement.getBoundingClientRect();
-    this.element.style.top = (rect.bottom + window.scrollY + 8) + 'px';
-    this.element.style.left = (rect.left + window.scrollX) + 'px';
+  show(targetElement, tags) {
+    this.createPopupContent(tags);
+    this.positionPopup(targetElement);
     this.element.style.display = 'block';
   }
 
-  // Hide the popup
+  positionPopup(targetElement) {
+    const rect = targetElement.getBoundingClientRect();
+    this.element.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+    this.element.style.left = (rect.left + window.scrollX) + 'px';
+  }
+
   hide() {
     this.element.style.display = 'none';
   }
