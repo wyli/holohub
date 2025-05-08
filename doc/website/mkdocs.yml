@@ -60,9 +60,6 @@ plugins:
   - gen-files:
       scripts:
         - scripts/generate_pages.py
-        - scripts/generate_featured_apps.py
-        - scripts/generate_tags_json.py
-        - scripts/generate_app_cards.py
 
   - macros
   - tags
@@ -84,6 +81,11 @@ plugins:
   - include_dir_to_nav:
       file_pattern: '.*\.(md|ipynb)$'
   - site-urls
+
+hooks:
+  - scripts/generate_featured_apps.py
+  - scripts/generate_tags_json.py
+  - scripts/generate_app_cards.py
 
 
 watch:

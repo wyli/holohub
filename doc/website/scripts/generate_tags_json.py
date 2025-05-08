@@ -90,5 +90,9 @@ def generate_tags_json() -> None:
     )
 
 
+def on_pre_build(config, **kwargs):
+    generate_tags_json()
+
+
 if __name__ in {"__main__", "<run_path>"}:
     generate_tags_json()

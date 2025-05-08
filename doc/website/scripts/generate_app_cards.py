@@ -111,6 +111,9 @@ def generate_app_cards():
     logger.info(f"Generated app cards data for {len(app_cards)} applications")
     return app_cards
 
+def on_pre_build(config, **kwargs):
+    generate_app_cards()
+
 
 if __name__ in {"__main__", "<run_path>"}:
     generate_app_cards()
