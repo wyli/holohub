@@ -1,34 +1,54 @@
 {
-  "XR + Holoviz": {
-    "name": "XR + Holoviz",
-    "description": "This application demonstrates the integration of Holoscan-XR with Holoviz for extended reality visualization. Run the following command in the top-level Holo...",
-    "image_url": null,
+  "Depth Anything V2": {
+    "name": "Depth Anything V2",
+    "description": "This application uses the Depth Anything V2 model for monocular depth estimation. Monocular Depth Estimation refers to the task of predicting the distance of...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/depth_anything_v2/docs/depth.gif",
     "tags": [
-      "Extended Reality",
+      "Computer Vision",
       "Visualization",
-      "Stereoscopic Projection Matrices",
-      "Xr Composition Layer Management",
-      "Openxr",
-      "Rendering",
-      "Stereo"
+      "Dynamic Colormap Generation",
+      "Edge Accelerated Inference",
+      "Monocular Depth Estimation",
+      "Interactive",
+      "Holoviz Ui",
+      "Video Processing"
     ],
-    "app_title": "XR + Holoviz",
-    "app_url": "applications/xr_holoviz/"
+    "app_title": "Depth Anything V2",
+    "app_url": "applications/depth_anything_v2/"
   },
-  "Power Spectral Density with cuNumeric": {
-    "name": "Power Spectral Density with cuNumeric",
-    "description": "cuNumeric is an drop-in replacement for NumPy that aims to provide a distributed and accelerated drop-in replacement for the NumPy API on top of the Legion r...",
+  "Real-Time Face and Text Deidentification": {
+    "name": "Real-Time Face and Text Deidentification",
+    "description": "This sample application demonstrates the use of face and text detection models to do real-time video deidentification. Regions identified to be face or text...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/video_deidentification/docs/video_deid.gif",
+    "tags": [
+      "Computer Vision",
+      "Video",
+      "Deidentification",
+      "Overlap Suppression",
+      "Detection",
+      "Image Processing",
+      "Video Processing",
+      "Bounding Box"
+    ],
+    "app_title": "Real-Time Face and Text Deidentification",
+    "app_url": "applications/video_deidentification/"
+  },
+  "Laser Detection": {
+    "name": "Laser Detection",
+    "description": "This application demonstrates the latency differences between USB and EVT cameras by detecting laser pointer positions on a monitor. It uses two camera sourc...",
     "image_url": null,
     "tags": [
-      "Signal Processing",
-      "Distributed",
-      "Legion Runtime",
-      "Drop In Replacement",
-      "Fft",
-      "Psd"
+      "Computer Vision",
+      "Video",
+      "Perspective Warp Calibration",
+      "Threshold Based Coordinate Mapping",
+      "Cv Cuda",
+      "Camera",
+      "Detection",
+      "Tracking"
     ],
-    "app_title": "Power Spectral Density with cuNumeric",
-    "app_url": "applications/cunumeric_integration/"
+    "app_title": "Laser Detection",
+    "app_url": "applications/laser_detection_latency/laser_detection/"
   },
   "Simple Radar Pipeline": {
     "name": "Simple Radar Pipeline",
@@ -45,39 +65,75 @@
       "Detection"
     ],
     "app_title": "Simple Radar Pipeline",
-    "app_url": "applications/simple_radar_pipeline/cpp/"
+    "app_url": "applications/simple_radar_pipeline/python/"
   },
-  "TAO PeopleNet Detection Model on V4L2 Video Stream": {
-    "name": "TAO PeopleNet Detection Model on V4L2 Video Stream",
-    "description": "Use the TAO PeopleNet available on NGC to detect faces and people in a V4L2 supported video stream. HoloViz is used to draw bounding boxes around the detecti...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/tao_peoplenet/docs/meeting.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Face Detection",
-      "Bounding Box Filtering",
-      "Holoviz Ui",
-      "Video Processing",
-      "Detection"
-    ],
-    "app_title": "TAO PeopleNet Detection Model on V4L2 Video Stream",
-    "app_url": "applications/tao_peoplenet/"
-  },
-  "Chat with NVIDIA NIM": {
-    "name": "Chat with NVIDIA NIM",
-    "description": "This is a sample application that shows how to use the OpenAI SDK with NVIDIA Inference Microservice (NIM). Whether you are using a NIM from build.nvidia.com...",
+  "Endoscopy Tool Tracking": {
+    "name": "Endoscopy Tool Tracking",
+    "description": "Based on a LSTM (long-short term memory) stateful model, these applications demonstrate the use of custom components for tool tracking, including composition...",
     "image_url": null,
     "tags": [
-      "NLP & Conversational",
-      "Integration",
-      "Model Switching",
-      "Yaml Configuration",
-      "Openai Api",
-      "Nim",
-      "Local Llm"
+      "Healthcare AI",
+      "Distributed",
+      "Lstm Tensorrt",
+      "Asynchronous Queues",
+      "Grpc",
+      "Video Processing",
+      "Computer Vision",
+      "Tracking",
+      "Visualization"
     ],
-    "app_title": "Chat with NVIDIA NIM",
-    "app_url": "applications/nvidia_nim/nvidia_nim_chat/"
+    "app_title": "Endoscopy Tool Tracking",
+    "app_url": "applications/endoscopy_tool_tracking/cpp/"
+  },
+  "Holoviz vsync": {
+    "name": "Holoviz vsync",
+    "description": "This application demonstrates the capability of the Holoviz operator to wait for the vertical blank of the display before updating the current image. It prin...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_vsync.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Frame Rate Synchronization",
+      "Color Gradient Generation",
+      "Holoviz Vsync",
+      "Rendering"
+    ],
+    "app_title": "Holoviz vsync",
+    "app_url": "applications/holoviz/holoviz_vsync/"
+  },
+  "DDS Video: Real-time Video Streaming with RTI Connext": {
+    "name": "DDS Video: Real-time Video Streaming with RTI Connext",
+    "description": "The DDS Video application demonstrates how video frames can be written to or read from a DDS databus in order to provide flexible integration between Holosca...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/dds/dds_video/docs/workflow_dds_video_app.png",
+    "tags": [
+      "Networking",
+      "Integration",
+      "Transport Tuning",
+      "Geometric Overlay",
+      "Dds",
+      "Rti Connext",
+      "Video Processing",
+      "Visualization",
+      "Shapes"
+    ],
+    "app_title": "DDS Video: Real-time Video Streaming with RTI Connext",
+    "app_url": "applications/dds/dds_video/"
+  },
+  "Image Processing with MATLAB GPU Coder": {
+    "name": "Image Processing with MATLAB GPU Coder",
+    "description": "This application does real-time image processing of Holoscan sample data. The image processing is implemented in MATLAB and converted to CUDA using GPU Coder...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/matlab_gpu_coder/matlab_image_processing/screenshot.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Gpu Code Generation",
+      "Memory Transpose Optimization",
+      "Matlab",
+      "Image Processing",
+      "Video Processing",
+      "Holoviz Ui"
+    ],
+    "app_title": "Image Processing with MATLAB GPU Coder",
+    "app_url": "applications/matlab_gpu_coder/matlab_image_processing/"
   },
   "Object Detection using PyTorch Faster R-CNN": {
     "name": "Object Detection using PyTorch Faster R-CNN",
@@ -97,70 +153,41 @@
     "app_title": "Object Detection using PyTorch Faster R-CNN",
     "app_url": "applications/object_detection_torch/"
   },
-  "Laser Detection": {
-    "name": "Laser Detection",
-    "description": "This application demonstrates the latency differences between USB and EVT cameras by detecting laser pointer positions on a monitor. It uses two camera sourc...",
+  "WebRTC Video Server": {
+    "name": "WebRTC Video Server",
+    "description": "This app reads video frames from a file and sends it to a browser using WebRTC. The app starts a web server, the pipeline starts when a browser is connected...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_video_server/screenshot.png",
+    "tags": [
+      "Networking",
+      "Video",
+      "Frame Replay Streaming",
+      "Browser Control Interface",
+      "Webrtc",
+      "Video Processing",
+      "Client Server",
+      "Communications",
+      "Video Decoding"
+    ],
+    "app_title": "WebRTC Video Server",
+    "app_url": "applications/webrtc_video_server/"
+  },
+  "Multi-AI Ultrasound": {
+    "name": "Multi-AI Ultrasound",
+    "description": "This application demonstrates how to run multiple inference pipelines in a single application by leveraging the Holoscan Inference module, a framework that f...",
     "image_url": null,
     "tags": [
-      "Computer Vision",
-      "Video",
-      "Perspective Warp Calibration",
-      "Threshold Based Coordinate Mapping",
-      "Cv Cuda",
-      "Camera",
-      "Detection",
-      "Tracking"
-    ],
-    "app_title": "Laser Detection",
-    "app_url": "applications/laser_detection_latency/laser_detection/"
-  },
-  "Endoscopy Depth Estimation": {
-    "name": "Endoscopy Depth Estimation",
-    "description": "This application demonstrates the use of custom components for depth estimation and its rendering using Holoviz with triangle interpolation. \ud83d\udce6\ufe0f (NGC) Sample...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/endoscopy_depth_estimation/screenshot.png",
-    "tags": [
       "Healthcare AI",
-      "Networking",
-      "Endoscopy",
-      "Monocular Depth Estimation",
-      "Cv Cuda",
-      "Video Processing",
-      "Rendering"
-    ],
-    "app_title": "Endoscopy Depth Estimation",
-    "app_url": "applications/endoscopy_depth_estimation/"
-  },
-  "Holoviz vsync": {
-    "name": "Holoviz vsync",
-    "description": "This application demonstrates the capability of the Holoviz operator to wait for the vertical blank of the display before updating the current image. It prin...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_vsync.png",
-    "tags": [
-      "Computer Vision",
       "Visualization",
-      "Frame Rate Synchronization",
-      "Color Gradient Generation",
-      "Holoviz Vsync",
-      "Rendering"
-    ],
-    "app_title": "Holoviz vsync",
-    "app_url": "applications/holoviz/holoviz_vsync/"
-  },
-  "Yolo Object Detection": {
-    "name": "Yolo Object Detection",
-    "description": "This project is aiming to provide basic guidance to deploy Yolo-based model to Holoscan SDK as \"Bring Your Own Model\" In this application example, we use the...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/yolo_model_deployment/docs/meeting.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Nhwc Nchw Conversion",
-      "Efficientnms_Trt Integration",
-      "Yolo Detection",
+      "Cardiac Keypoints Detection",
+      "Multi Model Fusion Pipeline",
+      "Ultrasound",
+      "Multiai",
       "Video Processing",
-      "Visualization",
-      "Camera"
+      "Classification",
+      "Visualization"
     ],
-    "app_title": "Yolo Object Detection",
-    "app_url": "applications/yolo_model_deployment/"
+    "app_title": "Multi-AI Ultrasound",
+    "app_url": "applications/multiai_ultrasound/cpp/"
   },
   "High-Speed Endoscopy": {
     "name": "High-Speed Endoscopy",
@@ -178,42 +205,77 @@
       "Video Processing"
     ],
     "app_title": "High-Speed Endoscopy",
-    "app_url": "applications/high_speed_endoscopy/cpp/"
+    "app_url": "applications/high_speed_endoscopy/python/"
   },
-  "WebRTC Holoviz Server": {
-    "name": "WebRTC Holoviz Server",
-    "description": "This app generates video frames with user specified content using Holoviz and sends it to a browser using WebRTC. The goal is to show how to remote control o...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_holoviz_server/screenshot.png",
+  "SSD Detection for Endoscopy Tools": {
+    "name": "SSD Detection for Endoscopy Tools",
+    "description": "We can train the SSD model from NVIDIA DeepLearningExamples repo with any data of our choosing. Here for the purpose of demonstrating the deployment process,...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Surgicaltooltracking",
+      "Onnx_Nhwc_Conversion",
+      "Ssd",
+      "Detection",
+      "Video Processing",
+      "Visualization",
+      "Bounding Box"
+    ],
+    "app_title": "SSD Detection for Endoscopy Tools",
+    "app_url": "applications/ssd_detection_endoscopy_tools/"
+  },
+  "SAM 2: Segment Anything in Images and Videos": {
+    "name": "SAM 2: Segment Anything in Images and Videos",
+    "description": "This application demonstrates how to run SAM2 models on live video feed with the possibility of changing query points in real-time. The application currently...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/sam2/holohub-sam2.gif",
     "tags": [
       "Computer Vision",
-      "Networking",
-      "Dynamic Geometry Rendering",
-      "Remote Pipeline Control",
-      "Webrtc",
+      "Video",
+      "Mask Score Optimization",
+      "Coordinate Remapping Pipeline",
+      "Sam2 Model",
+      "Segmentation",
+      "Interactive",
       "Visualization",
-      "Server",
-      "Holoviz Ui",
-      "Interactive"
+      "Camera"
     ],
-    "app_title": "WebRTC Holoviz Server",
-    "app_url": "applications/webrtc_holoviz_server/"
+    "app_title": "SAM 2: Segment Anything in Images and Videos",
+    "app_url": "applications/sam2/"
   },
-  "HoloChat": {
-    "name": "HoloChat",
-    "description": "HoloChat is an AI-driven chatbot, built on top of a locally hosted Code-Llama model OR a remote NIM API for Llama-3-70b, which acts as developer's copilot in...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holochat/holochat_demo.gif",
+  "Medical Image Viewer in XR": {
+    "name": "Medical Image Viewer in XR",
+    "description": "We collaborated with Magic Leap on a proof of concept mixed reality viewer for medical imagery built on the Holoscan platform. Medical imagery is one of the...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/volume_rendering_xr/doc/stereo_skeleton.png",
     "tags": [
-      "NLP & Conversational",
-      "Integration",
-      "Code Context Management",
-      "Documentation Aware Generation",
-      "Rag",
-      "Nim",
-      "Vector Database",
-      "Local Llm"
+      "Extended Reality",
+      "Visualization",
+      "Depth Conversion",
+      "Interactive Controls",
+      "Openxr",
+      "Bounding Box",
+      "Holoviz Ui",
+      "Volume"
     ],
-    "app_title": "HoloChat",
-    "app_url": "applications/holochat/"
+    "app_title": "Medical Image Viewer in XR",
+    "app_url": "applications/volume_rendering_xr/"
+  },
+  "Ultrasound Beamforming with MATLAB GPU Coder": {
+    "name": "Ultrasound Beamforming with MATLAB GPU Coder",
+    "description": "This application does real-time ultrasound beamforming of simulated data. The beamforming algorithm is implemented in MATLAB and converted to CUDA using MATL...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Visualization",
+      "Synthetic Aperture Beamforming",
+      "Phased Array Simulation",
+      "Matlab",
+      "Beamforming",
+      "Ultrasound",
+      "Synthetic Aperture"
+    ],
+    "app_title": "Ultrasound Beamforming with MATLAB GPU Coder",
+    "app_url": "applications/matlab_gpu_coder/matlab_beamform/"
   },
   "EVT Camera Calibration": {
     "name": "EVT Camera Calibration",
@@ -250,23 +312,22 @@
     "app_title": "Colonoscopy Polyp Segmentation",
     "app_url": "applications/colonoscopy_segmentation/"
   },
-  "Qt Video Replayer": {
-    "name": "Qt Video Replayer",
-    "description": "This application demonstrates how to integrate Holoscan with a Qt application. It support displaying the video frames output by a Holoscan operator and chang...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/qt_video_replayer/screenshot.png",
+  "FM Radio Automatic Speech Recognition": {
+    "name": "FM Radio Automatic Speech Recognition",
+    "description": "This project is proof-of-concept demo featuring the combination of real-time, low-level signal processing and deep learning inference. It currently supports...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/fm_asr/docs/images/pipeline_arch.png",
     "tags": [
-      "Computer Vision",
-      "Integration",
-      "Dynamic Parameter Adjustment",
-      "Operator Ui Binding",
-      "Qt",
-      "Qml",
-      "Video Processing",
-      "Visualization",
-      "Interactive"
+      "Signal Processing",
+      "Audio",
+      "Fm Demodulation",
+      "Polyphase Resampling",
+      "Automatic Speech Recognition",
+      "Signal Processing",
+      "Sdr",
+      "Grpc"
     ],
-    "app_title": "Qt Video Replayer",
-    "app_url": "applications/qt_video_replayer/"
+    "app_title": "FM Radio Automatic Speech Recognition",
+    "app_url": "applications/fm_asr/"
   },
   "Holoviz YUV": {
     "name": "Holoviz YUV",
@@ -285,40 +346,20 @@
     "app_title": "Holoviz YUV",
     "app_url": "applications/holoviz/holoviz_yuv/"
   },
-  "Body Pose Estimation": {
-    "name": "Body Pose Estimation",
-    "description": "Body pose estimation is a computer vision task that involves recognizing specific points on the human body in images or videos. A model is used to infer the...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/body_pose_estimation/docs/1.png",
+  "CUDA Quantum Variational Quantum Eigensolver (VQE)": {
+    "name": "CUDA Quantum Variational Quantum Eigensolver (VQE)",
+    "description": "The Variational Quantum Eigensolver (VQE) is a quantum algorithm designed to approximate the ground state energy of quantum systems. This energy, represented...",
+    "image_url": null,
     "tags": [
-      "Computer Vision",
-      "Distributed",
-      "Tensor Axis Transformation",
-      "Keypoint Non Max Suppression",
-      "Human Body Pose Estimation",
-      "Dds",
-      "Rti Connext",
-      "Video Processing",
-      "Visualization"
+      "Specialized Tools",
+      "Integration",
+      "Hamiltonian Minimization",
+      "Parameter Optimization",
+      "Vqe",
+      "Quantum Computing"
     ],
-    "app_title": "Body Pose Estimation",
-    "app_url": "applications/body_pose_estimation/"
-  },
-  "Image Processing with MATLAB GPU Coder": {
-    "name": "Image Processing with MATLAB GPU Coder",
-    "description": "This application does real-time image processing of Holoscan sample data. The image processing is implemented in MATLAB and converted to CUDA using GPU Coder...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/matlab_gpu_coder/matlab_image_processing/screenshot.png",
-    "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Gpu Code Generation",
-      "Memory Transpose Optimization",
-      "Matlab",
-      "Image Processing",
-      "Video Processing",
-      "Holoviz Ui"
-    ],
-    "app_title": "Image Processing with MATLAB GPU Coder",
-    "app_url": "applications/matlab_gpu_coder/matlab_image_processing/"
+    "app_title": "CUDA Quantum Variational Quantum Eigensolver (VQE)",
+    "app_url": "applications/cuda_quantum/"
   },
   "Speech-to-text + Large Language Model": {
     "name": "Speech-to-text + Large Language Model",
@@ -337,39 +378,90 @@
     "app_title": "Speech-to-text + Large Language Model",
     "app_url": "applications/speech_to_text_llm/"
   },
-  "FM Radio Automatic Speech Recognition": {
-    "name": "FM Radio Automatic Speech Recognition",
-    "description": "This project is proof-of-concept demo featuring the combination of real-time, low-level signal processing and deep learning inference. It currently supports...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/fm_asr/docs/images/pipeline_arch.png",
+  "HoloChat": {
+    "name": "HoloChat",
+    "description": "HoloChat is an AI-driven chatbot, built on top of a locally hosted Code-Llama model OR a remote NIM API for Llama-3-70b, which acts as developer's copilot in...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holochat/holochat_demo.gif",
     "tags": [
-      "Signal Processing",
-      "Audio",
-      "Fm Demodulation",
-      "Polyphase Resampling",
-      "Automatic Speech Recognition",
-      "Signal Processing",
-      "Sdr",
-      "Grpc"
+      "NLP & Conversational",
+      "Integration",
+      "Code Context Management",
+      "Documentation Aware Generation",
+      "Rag",
+      "Nim",
+      "Vector Database",
+      "Local Llm"
     ],
-    "app_title": "FM Radio Automatic Speech Recognition",
-    "app_url": "applications/fm_asr/"
+    "app_title": "HoloChat",
+    "app_url": "applications/holochat/"
   },
-  "Software Defined Radio FM Demodulation": {
-    "name": "Software Defined Radio FM Demodulation",
-    "description": "As the \"Hello World\" application of software defined radio developers, this demonstration highlights real-time FM demodulation, resampling, and playback on G...",
+  "Basic Pulse Description Word (PDW) Generator": {
+    "name": "Basic Pulse Description Word (PDW) Generator",
+    "description": "This is a Holoscan pipeline that shows the possibility of using Holoscan as a Pulse Description Word (PDW) generator. This is a process that takes in IQ samp...",
     "image_url": null,
     "tags": [
       "Signal Processing",
-      "Audio",
-      "Fm Demodulation Pipeline",
-      "Gpu Accelerated Resampling",
-      "Sdr",
-      "Signal Processing",
+      "Radar",
+      "Pulse Description Word",
+      "Spectral Threshold Detection",
+      "Fft",
       "Iq Data",
-      "Fft"
+      "Udp",
+      "Signal Processing"
     ],
-    "app_title": "Software Defined Radio FM Demodulation",
-    "app_url": "applications/sdr_fm_demodulation/"
+    "app_title": "Basic Pulse Description Word (PDW) Generator",
+    "app_url": "applications/simple_pdw_pipeline/"
+  },
+  "VILA Live": {
+    "name": "VILA Live",
+    "description": "This application demonstrates how to run VILA 1.5 models on live video feed with the possibility of changing the prompt in real time. VILA 1.5 is a family of...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/vila_live/screenshot.png",
+    "tags": [
+      "Computer Vision",
+      "Language Model",
+      "Visual Query Injection",
+      "Stream Aware Inference",
+      "Large Vision Model",
+      "Multimodal Model",
+      "Video Processing",
+      "Interactive"
+    ],
+    "app_title": "VILA Live",
+    "app_url": "applications/vila_live/"
+  },
+  "Streaming Synthetic Aperture Radar": {
+    "name": "Streaming Synthetic Aperture Radar",
+    "description": "This application is a demonstration of using Holoscan to construct Synthetic Aperture Radar (SAR) imagery from a data collection. In current form, the data i...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/synthetic_aperture_radar/sar-grab.png",
+    "tags": [
+      "Signal Processing",
+      "Imaging",
+      "Backprojection",
+      "Coherent Integration",
+      "Sar",
+      "Synthetic Aperture",
+      "Fft",
+      "Holoviz Ui"
+    ],
+    "app_title": "Streaming Synthetic Aperture Radar",
+    "app_url": "applications/synthetic_aperture_radar/"
+  },
+  "Holoviz UI": {
+    "name": "Holoviz UI",
+    "description": "This application uses the layer callback provided by the Holoviz operator and leverages the Holoviz module API to add an UI layer with elements and a geometr...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_ui.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Imgui Integration",
+      "Dynamic Gradients",
+      "Holoviz Ui",
+      "Interactive",
+      "Rendering",
+      "Shapes"
+    ],
+    "app_title": "Holoviz UI",
+    "app_url": "applications/holoviz/holoviz_ui/"
   },
   "Endoscopy Out of Body Detection": {
     "name": "Endoscopy Out of Body Detection",
@@ -386,162 +478,43 @@
       "Computer Vision"
     ],
     "app_title": "Endoscopy Out of Body Detection",
-    "app_url": "applications/endoscopy_out_of_body_detection/python/"
+    "app_url": "applications/endoscopy_out_of_body_detection/cpp/"
   },
-  "Medical Image Viewer in XR": {
-    "name": "Medical Image Viewer in XR",
-    "description": "We collaborated with Magic Leap on a proof of concept mixed reality viewer for medical imagery built on the Holoscan platform. Medical imagery is one of the...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/volume_rendering_xr/doc/stereo_skeleton.png",
+  "Qt Video Replayer": {
+    "name": "Qt Video Replayer",
+    "description": "This application demonstrates how to integrate Holoscan with a Qt application. It support displaying the video frames output by a Holoscan operator and chang...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/qt_video_replayer/screenshot.png",
     "tags": [
-      "Extended Reality",
-      "Visualization",
-      "Depth Conversion",
-      "Interactive Controls",
-      "Openxr",
-      "Bounding Box",
-      "Holoviz Ui",
-      "Volume"
-    ],
-    "app_title": "Medical Image Viewer in XR",
-    "app_url": "applications/volume_rendering_xr/"
-  },
-  "Endoscopy Tool Tracking": {
-    "name": "Endoscopy Tool Tracking",
-    "description": "Based on a LSTM (long-short term memory) stateful model, these applications demonstrate the use of custom components for tool tracking, including composition...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Distributed",
-      "Lstm Tensorrt",
-      "Asynchronous Queues",
-      "Grpc",
+      "Computer Vision",
+      "Integration",
+      "Dynamic Parameter Adjustment",
+      "Operator Ui Binding",
+      "Qt",
+      "Qml",
       "Video Processing",
+      "Visualization",
+      "Interactive"
+    ],
+    "app_title": "Qt Video Replayer",
+    "app_url": "applications/qt_video_replayer/"
+  },
+  "WebRTC Holoviz Server": {
+    "name": "WebRTC Holoviz Server",
+    "description": "This app generates video frames with user specified content using Holoviz and sends it to a browser using WebRTC. The goal is to show how to remote control o...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_holoviz_server/screenshot.png",
+    "tags": [
       "Computer Vision",
-      "Tracking",
-      "Visualization"
-    ],
-    "app_title": "Endoscopy Tool Tracking",
-    "app_url": "applications/endoscopy_tool_tracking/python/"
-  },
-  "Medical Imaging Segmentation with NVIDIA Vista-3D NIM": {
-    "name": "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
-    "description": "Vista-3D is a specialized interactive foundation model for segmenting and annotating human anatomies. This sample application demonstrates using the Vista-3D...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/nvidia_nim/nvidia_nim_imaging/assets/3d-slicer-1.png",
-    "tags": [
-      "Healthcare AI",
-      "Imaging",
-      "Anatomical Segmentation",
-      "Nrrd Processing",
-      "3D Slicer",
-      "Nim",
-      "Segmentation",
-      "Radiology Imaging"
-    ],
-    "app_title": "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
-    "app_url": "applications/nvidia_nim/nvidia_nim_imaging/"
-  },
-  "WebRTC Video Client": {
-    "name": "WebRTC Video Client",
-    "description": "This app receives video frames from a web cam connected to a browser and display them on the screen. The app starts a web server, the pipeline starts when a...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_video_client/screenshot.png",
-    "tags": [
       "Networking",
-      "Video",
-      "Sdp Exchange",
-      "Ice Candidate Management",
+      "Dynamic Geometry Rendering",
+      "Remote Pipeline Control",
       "Webrtc",
-      "Client",
-      "Camera",
       "Visualization",
-      "H.264"
-    ],
-    "app_title": "WebRTC Video Client",
-    "app_url": "applications/webrtc_video_client/"
-  },
-  "VITA 49 Power Spectral Density (PSD)": {
-    "name": "VITA 49 Power Spectral Density (PSD)",
-    "description": "The VITA 49 Power Spectral Density (PSD) application takes in a VITA49 data stream from the advanced network operator, then performs an FFT, PSD, and averagi...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/psd_pipeline/imgs/psd_pipeline_diagram.png",
-    "tags": [
-      "Signal Processing",
-      "Networking",
-      "I/Q Scaling",
-      "Vita49 Protocol Handling",
-      "Fft",
-      "Psd",
-      "Gpudirect",
-      "Udp"
-    ],
-    "app_title": "VITA 49 Power Spectral Density (PSD)",
-    "app_url": "applications/psd_pipeline/"
-  },
-  "Ultrasound Bone Scoliosis Segmentation": {
-    "name": "Ultrasound Bone Scoliosis Segmentation",
-    "description": "Full workflow including a generic visualization of segmentation results from a spinal scoliosis segmentation model of ultrasound videos. The model used is st...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Spinal Feature Extraction",
-      "Curvature Quantification",
-      "Ultrasound",
-      "Segmentation",
-      "Aja",
-      "Visualization",
-      "Video Processing"
-    ],
-    "app_title": "Ultrasound Bone Scoliosis Segmentation",
-    "app_url": "applications/ultrasound_segmentation/python/"
-  },
-  "Holoviz sRGB": {
-    "name": "Holoviz sRGB",
-    "description": "This application demonstrates the handling of the sRGB color space supported by the Holoviz operator. The Holoviz operator can convert sRGB input images to l...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_srgb.png",
-    "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Synthetic Test Patterns",
-      "Dual Color Space Control",
-      "Holoviz Srgb",
-      "Eotf",
-      "Rendering"
-    ],
-    "app_title": "Holoviz sRGB",
-    "app_url": "applications/holoviz/holoviz_srgb/"
-  },
-  "USB Camera Calibration": {
-    "name": "USB Camera Calibration",
-    "description": "This application performs monitor registration using a USB camera. It detects April tags placed at the four corners of a monitor to establish the monitor's p...",
-    "image_url": null,
-    "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Perspective Matrix Generation",
-      "Frame Delayed Calibration",
-      "Camera",
-      "Detection",
-      "Image Processing",
-      "Holoviz Ui"
-    ],
-    "app_title": "USB Camera Calibration",
-    "app_url": "applications/laser_detection_latency/usb_cam_calibration/"
-  },
-  "Depth Anything V2": {
-    "name": "Depth Anything V2",
-    "description": "This application uses the Depth Anything V2 model for monocular depth estimation. Monocular Depth Estimation refers to the task of predicting the distance of...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/depth_anything_v2/docs/depth.gif",
-    "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Dynamic Colormap Generation",
-      "Edge Accelerated Inference",
-      "Monocular Depth Estimation",
-      "Interactive",
+      "Server",
       "Holoviz Ui",
-      "Video Processing"
+      "Interactive"
     ],
-    "app_title": "Depth Anything V2",
-    "app_url": "applications/depth_anything_v2/"
+    "app_title": "WebRTC Holoviz Server",
+    "app_url": "applications/webrtc_holoviz_server/"
   },
   "EHR Agent Framework": {
     "name": "EHR Agent Framework",
@@ -561,108 +534,58 @@
     "app_title": "EHR Agent Framework",
     "app_url": "applications/ehr_query_llm/lmm/"
   },
-  "Real-Time Face and Text Deidentification": {
-    "name": "Real-Time Face and Text Deidentification",
-    "description": "This sample application demonstrates the use of face and text detection models to do real-time video deidentification. Regions identified to be face or text...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/video_deidentification/docs/video_deid.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Deidentification",
-      "Overlap Suppression",
-      "Detection",
-      "Image Processing",
-      "Video Processing",
-      "Bounding Box"
-    ],
-    "app_title": "Real-Time Face and Text Deidentification",
-    "app_url": "applications/video_deidentification/"
-  },
-  "WebRTC Video Server": {
-    "name": "WebRTC Video Server",
-    "description": "This app reads video frames from a file and sends it to a browser using WebRTC. The app starts a web server, the pipeline starts when a browser is connected...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_video_server/screenshot.png",
-    "tags": [
-      "Networking",
-      "Video",
-      "Frame Replay Streaming",
-      "Browser Control Interface",
-      "Webrtc",
-      "Video Processing",
-      "Client Server",
-      "Communications",
-      "Video Decoding"
-    ],
-    "app_title": "WebRTC Video Server",
-    "app_url": "applications/webrtc_video_server/"
-  },
-  "Streaming Synthetic Aperture Radar": {
-    "name": "Streaming Synthetic Aperture Radar",
-    "description": "This application is a demonstration of using Holoscan to construct Synthetic Aperture Radar (SAR) imagery from a data collection. In current form, the data i...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/synthetic_aperture_radar/sar-grab.png",
-    "tags": [
-      "Signal Processing",
-      "Imaging",
-      "Backprojection",
-      "Coherent Integration",
-      "Sar",
-      "Synthetic Aperture",
-      "Fft",
-      "Holoviz Ui"
-    ],
-    "app_title": "Streaming Synthetic Aperture Radar",
-    "app_url": "applications/synthetic_aperture_radar/"
-  },
-  "FHIR Client for Retrieving and Posting FHIR Resources": {
-    "name": "FHIR Client for Retrieving and Posting FHIR Resources",
-    "description": "This is an application to interface with a FHIR server to retrieve or post FHIR resources. It requires the FHIR Server endpoint URL be provided on the comman...",
+  "UCX-based Distributed Endoscopy Tool Tracking": {
+    "name": "UCX-based Distributed Endoscopy Tool Tracking",
+    "description": "This application is similar to the Endoscopy Tool Tracking application, but the distributed version divides the application into three fragments: Based on an...",
     "image_url": null,
     "tags": [
       "Healthcare AI",
       "Distributed",
-      "Zeromq Messaging",
-      "Oauth2 Authentication",
-      "Fhir",
-      "Ehr",
-      "Client",
-      "Ehr_Query_Llm"
+      "Surgical Instrument Tracking",
+      "Real-Time Mask Overlay",
+      "Endoscopy",
+      "Video Processing",
+      "Computer Vision",
+      "Segmentation"
     ],
-    "app_title": "FHIR Client for Retrieving and Posting FHIR Resources",
-    "app_url": "applications/ehr_query_llm/fhir/"
+    "app_title": "UCX-based Distributed Endoscopy Tool Tracking",
+    "app_url": "applications/distributed/ucx/ucx_endoscopy_tool_tracking/cpp/"
   },
-  "Ultrasound Beamforming with MATLAB GPU Coder": {
-    "name": "Ultrasound Beamforming with MATLAB GPU Coder",
-    "description": "This application does real-time ultrasound beamforming of simulated data. The beamforming algorithm is implemented in MATLAB and converted to CUDA using MATL...",
+  "Body Pose Estimation": {
+    "name": "Body Pose Estimation",
+    "description": "Body pose estimation is a computer vision task that involves recognizing specific points on the human body in images or videos. A model is used to infer the...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/body_pose_estimation/docs/1.png",
+    "tags": [
+      "Computer Vision",
+      "Distributed",
+      "Tensor Axis Transformation",
+      "Keypoint Non Max Suppression",
+      "Human Body Pose Estimation",
+      "Dds",
+      "Rti Connext",
+      "Video Processing",
+      "Visualization"
+    ],
+    "app_title": "Body Pose Estimation",
+    "app_url": "applications/body_pose_estimation/"
+  },
+  "Ultrasound Bone Scoliosis Segmentation": {
+    "name": "Ultrasound Bone Scoliosis Segmentation",
+    "description": "Full workflow including a generic visualization of segmentation results from a spinal scoliosis segmentation model of ultrasound videos. The model used is st...",
     "image_url": null,
     "tags": [
       "Healthcare AI",
-      "Visualization",
-      "Synthetic Aperture Beamforming",
-      "Phased Array Simulation",
-      "Matlab",
-      "Beamforming",
+      "Video",
+      "Spinal Feature Extraction",
+      "Curvature Quantification",
       "Ultrasound",
-      "Synthetic Aperture"
-    ],
-    "app_title": "Ultrasound Beamforming with MATLAB GPU Coder",
-    "app_url": "applications/matlab_gpu_coder/matlab_beamform/"
-  },
-  "Holoviz HDR": {
-    "name": "Holoviz HDR",
-    "description": "This application demonstrates displaying HDR images using the Holoviz operator. The application creates image data in HDR10 (BT2020 color space) with SMPTE S...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_hdr.png",
-    "tags": [
-      "Computer Vision",
+      "Segmentation",
+      "Aja",
       "Visualization",
-      "Dynamic Luminance",
-      "Color Space Conversion",
-      "St2084",
-      "Bt2020",
-      "Eotf",
-      "Holoviz Hdr"
+      "Video Processing"
     ],
-    "app_title": "Holoviz HDR",
-    "app_url": "applications/holoviz/holoviz_hdr/"
+    "app_title": "Ultrasound Bone Scoliosis Segmentation",
+    "app_url": "applications/ultrasound_segmentation/python/"
   },
   "Hyperspectral Image Segmentation": {
     "name": "Hyperspectral Image Segmentation",
@@ -682,6 +605,141 @@
     "app_title": "Hyperspectral Image Segmentation",
     "app_url": "applications/hyperspectral_segmentation/"
   },
+  "USB Camera Calibration": {
+    "name": "USB Camera Calibration",
+    "description": "This application performs monitor registration using a USB camera. It detects April tags placed at the four corners of a monitor to establish the monitor's p...",
+    "image_url": null,
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Perspective Matrix Generation",
+      "Frame Delayed Calibration",
+      "Camera",
+      "Detection",
+      "Image Processing",
+      "Holoviz Ui"
+    ],
+    "app_title": "USB Camera Calibration",
+    "app_url": "applications/laser_detection_latency/usb_cam_calibration/"
+  },
+  "Endoscopy Depth Estimation": {
+    "name": "Endoscopy Depth Estimation",
+    "description": "This application demonstrates the use of custom components for depth estimation and its rendering using Holoviz with triangle interpolation. \ud83d\udce6\ufe0f (NGC) Sample...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/endoscopy_depth_estimation/screenshot.png",
+    "tags": [
+      "Healthcare AI",
+      "Networking",
+      "Endoscopy",
+      "Monocular Depth Estimation",
+      "Cv Cuda",
+      "Video Processing",
+      "Rendering"
+    ],
+    "app_title": "Endoscopy Depth Estimation",
+    "app_url": "applications/endoscopy_depth_estimation/"
+  },
+  "Yolo Object Detection": {
+    "name": "Yolo Object Detection",
+    "description": "This project is aiming to provide basic guidance to deploy Yolo-based model to Holoscan SDK as \"Bring Your Own Model\" In this application example, we use the...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/yolo_model_deployment/docs/meeting.gif",
+    "tags": [
+      "Computer Vision",
+      "Video",
+      "Nhwc Nchw Conversion",
+      "Efficientnms_Trt Integration",
+      "Yolo Detection",
+      "Video Processing",
+      "Visualization",
+      "Camera"
+    ],
+    "app_title": "Yolo Object Detection",
+    "app_url": "applications/yolo_model_deployment/"
+  },
+  "XR + Holoviz": {
+    "name": "XR + Holoviz",
+    "description": "This application demonstrates the integration of Holoscan-XR with Holoviz for extended reality visualization. Run the following command in the top-level Holo...",
+    "image_url": null,
+    "tags": [
+      "Extended Reality",
+      "Visualization",
+      "Stereoscopic Projection Matrices",
+      "Xr Composition Layer Management",
+      "Openxr",
+      "Rendering",
+      "Stereo"
+    ],
+    "app_title": "XR + Holoviz",
+    "app_url": "applications/xr_holoviz/"
+  },
+  "Medical Imaging Segmentation with NVIDIA Vista-3D NIM": {
+    "name": "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
+    "description": "Vista-3D is a specialized interactive foundation model for segmenting and annotating human anatomies. This sample application demonstrates using the Vista-3D...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/nvidia_nim/nvidia_nim_imaging/assets/3d-slicer-1.png",
+    "tags": [
+      "Healthcare AI",
+      "Imaging",
+      "Anatomical Segmentation",
+      "Nrrd Processing",
+      "3D Slicer",
+      "Nim",
+      "Segmentation",
+      "Radiology Imaging"
+    ],
+    "app_title": "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
+    "app_url": "applications/nvidia_nim/nvidia_nim_imaging/"
+  },
+  "Holoviz HDR": {
+    "name": "Holoviz HDR",
+    "description": "This application demonstrates displaying HDR images using the Holoviz operator. The application creates image data in HDR10 (BT2020 color space) with SMPTE S...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_hdr.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Dynamic Luminance",
+      "Color Space Conversion",
+      "St2084",
+      "Bt2020",
+      "Eotf",
+      "Holoviz Hdr"
+    ],
+    "app_title": "Holoviz HDR",
+    "app_url": "applications/holoviz/holoviz_hdr/"
+  },
+  "FHIR Client for Retrieving and Posting FHIR Resources": {
+    "name": "FHIR Client for Retrieving and Posting FHIR Resources",
+    "description": "This is an application to interface with a FHIR server to retrieve or post FHIR resources. It requires the FHIR Server endpoint URL be provided on the comman...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Distributed",
+      "Zeromq Messaging",
+      "Oauth2 Authentication",
+      "Fhir",
+      "Ehr",
+      "Client",
+      "Ehr_Query_Llm"
+    ],
+    "app_title": "FHIR Client for Retrieving and Posting FHIR Resources",
+    "app_url": "applications/ehr_query_llm/fhir/"
+  },
+  "WebRTC Video Client": {
+    "name": "WebRTC Video Client",
+    "description": "This app receives video frames from a web cam connected to a browser and display them on the screen. The app starts a web server, the pipeline starts when a...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/webrtc_video_client/screenshot.png",
+    "tags": [
+      "Networking",
+      "Video",
+      "Sdp Exchange",
+      "Ice Candidate Management",
+      "Webrtc",
+      "Client",
+      "Camera",
+      "Visualization",
+      "H.264"
+    ],
+    "app_title": "WebRTC Video Client",
+    "app_url": "applications/webrtc_video_client/"
+  },
   "Imaging AI Whole Body Segmentation": {
     "name": "Imaging AI Whole Body Segmentation",
     "description": "This application uses MONAI re-trained TotalSegmentator model to segment 104 body parts from a DICOM series of a CT scan. It is implemented using Holohub DIC...",
@@ -699,58 +757,6 @@
     "app_title": "Imaging AI Whole Body Segmentation",
     "app_url": "applications/imaging_ai_segmentator/"
   },
-  "Real-time Riva ASR to local-LLM": {
-    "name": "Real-time Riva ASR to local-LLM",
-    "description": "This application streams microphone input to NVIDIA Riva Automatic Speech Recognition (ASR), which once the user specifies they are done speaking, passes the...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Audio",
-      "Streaming Asr Pipeline",
-      "Quantized Model Inference",
-      "Automatic Speech Recognition",
-      "Local Llm",
-      "Speech To Text",
-      "Radiology Imaging"
-    ],
-    "app_title": "Real-time Riva ASR to local-LLM",
-    "app_url": "applications/asr_to_llm/"
-  },
-  "Basic Pulse Description Word (PDW) Generator": {
-    "name": "Basic Pulse Description Word (PDW) Generator",
-    "description": "This is a Holoscan pipeline that shows the possibility of using Holoscan as a Pulse Description Word (PDW) generator. This is a process that takes in IQ samp...",
-    "image_url": null,
-    "tags": [
-      "Signal Processing",
-      "Radar",
-      "Pulse Description Word",
-      "Spectral Threshold Detection",
-      "Fft",
-      "Iq Data",
-      "Udp",
-      "Signal Processing"
-    ],
-    "app_title": "Basic Pulse Description Word (PDW) Generator",
-    "app_url": "applications/simple_pdw_pipeline/"
-  },
-  "SAM 2: Segment Anything in Images and Videos": {
-    "name": "SAM 2: Segment Anything in Images and Videos",
-    "description": "This application demonstrates how to run SAM2 models on live video feed with the possibility of changing query points in real-time. The application currently...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/sam2/holohub-sam2.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Mask Score Optimization",
-      "Coordinate Remapping Pipeline",
-      "Sam2 Model",
-      "Segmentation",
-      "Interactive",
-      "Visualization",
-      "Camera"
-    ],
-    "app_title": "SAM 2: Segment Anything in Images and Videos",
-    "app_url": "applications/sam2/"
-  },
   "Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks": {
     "name": "Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks",
     "description": "This application demonstrates how to run the Florence-2 models on a live video feed with the possibility of changing the task and optional prompt via a QT UI...",
@@ -767,6 +773,55 @@
     ],
     "app_title": "Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks",
     "app_url": "applications/florence-2-vision/"
+  },
+  "Software Defined Radio FM Demodulation": {
+    "name": "Software Defined Radio FM Demodulation",
+    "description": "As the \"Hello World\" application of software defined radio developers, this demonstration highlights real-time FM demodulation, resampling, and playback on G...",
+    "image_url": null,
+    "tags": [
+      "Signal Processing",
+      "Audio",
+      "Fm Demodulation Pipeline",
+      "Gpu Accelerated Resampling",
+      "Sdr",
+      "Signal Processing",
+      "Iq Data",
+      "Fft"
+    ],
+    "app_title": "Software Defined Radio FM Demodulation",
+    "app_url": "applications/sdr_fm_demodulation/"
+  },
+  "Power Spectral Density with cuNumeric": {
+    "name": "Power Spectral Density with cuNumeric",
+    "description": "cuNumeric is an drop-in replacement for NumPy that aims to provide a distributed and accelerated drop-in replacement for the NumPy API on top of the Legion r...",
+    "image_url": null,
+    "tags": [
+      "Signal Processing",
+      "Distributed",
+      "Legion Runtime",
+      "Drop In Replacement",
+      "Fft",
+      "Psd"
+    ],
+    "app_title": "Power Spectral Density with cuNumeric",
+    "app_url": "applications/cunumeric_integration/"
+  },
+  "Endoscopy Tool Segmentation from MONAI Model Zoo": {
+    "name": "Endoscopy Tool Segmentation from MONAI Model Zoo",
+    "description": "This endoscopy tool segmentation application runs the MONAI Endoscopic Tool Segmentation from MONAI Model Zoo. This HoloHub application has been verified on...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Onnx Graphsurgeon",
+      "Endoscopic Instrument Analysis",
+      "Monai Model Zoo",
+      "Endoscopy",
+      "Segmentation",
+      "Video Processing"
+    ],
+    "app_title": "Endoscopy Tool Segmentation from MONAI Model Zoo",
+    "app_url": "applications/monai_endoscopic_tool_seg/"
   },
   "NVIDIA NV-CLIP NIM": {
     "name": "NVIDIA NV-CLIP NIM",
@@ -786,176 +841,87 @@
     "app_title": "NVIDIA NV-CLIP NIM",
     "app_url": "applications/nvidia_nim/nvidia_nim_nvclip/"
   },
-  "UCX-based Distributed Endoscopy Tool Tracking": {
-    "name": "UCX-based Distributed Endoscopy Tool Tracking",
-    "description": "This application is similar to the Endoscopy Tool Tracking application, but the distributed version divides the application into three fragments: Based on an...",
-    "image_url": null,
+  "VITA 49 Power Spectral Density (PSD)": {
+    "name": "VITA 49 Power Spectral Density (PSD)",
+    "description": "The VITA 49 Power Spectral Density (PSD) application takes in a VITA49 data stream from the advanced network operator, then performs an FFT, PSD, and averagi...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/psd_pipeline/imgs/psd_pipeline_diagram.png",
     "tags": [
-      "Healthcare AI",
-      "Distributed",
-      "Surgical Instrument Tracking",
-      "Real-Time Mask Overlay",
-      "Endoscopy",
-      "Video Processing",
-      "Computer Vision",
-      "Segmentation"
-    ],
-    "app_title": "UCX-based Distributed Endoscopy Tool Tracking",
-    "app_url": "applications/distributed/ucx/ucx_endoscopy_tool_tracking/python/"
-  },
-  "SSD Detection for Endoscopy Tools": {
-    "name": "SSD Detection for Endoscopy Tools",
-    "description": "We can train the SSD model from NVIDIA DeepLearningExamples repo with any data of our choosing. Here for the purpose of demonstrating the deployment process,...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Surgicaltooltracking",
-      "Onnx_Nhwc_Conversion",
-      "Ssd",
-      "Detection",
-      "Video Processing",
-      "Visualization",
-      "Bounding Box"
-    ],
-    "app_title": "SSD Detection for Endoscopy Tools",
-    "app_url": "applications/ssd_detection_endoscopy_tools/"
-  },
-  "Multi-AI Ultrasound": {
-    "name": "Multi-AI Ultrasound",
-    "description": "This application demonstrates how to run multiple inference pipelines in a single application by leveraging the Holoscan Inference module, a framework that f...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Visualization",
-      "Cardiac Keypoints Detection",
-      "Multi Model Fusion Pipeline",
-      "Ultrasound",
-      "Multiai",
-      "Video Processing",
-      "Classification",
-      "Visualization"
-    ],
-    "app_title": "Multi-AI Ultrasound",
-    "app_url": "applications/multiai_ultrasound/python/"
-  },
-  "VILA Live": {
-    "name": "VILA Live",
-    "description": "This application demonstrates how to run VILA 1.5 models on live video feed with the possibility of changing the prompt in real time. VILA 1.5 is a family of...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/vila_live/screenshot.png",
-    "tags": [
-      "Computer Vision",
-      "Language Model",
-      "Visual Query Injection",
-      "Stream Aware Inference",
-      "Large Vision Model",
-      "Multimodal Model",
-      "Video Processing",
-      "Interactive"
-    ],
-    "app_title": "VILA Live",
-    "app_url": "applications/vila_live/"
-  },
-  "DDS Video: Real-time Video Streaming with RTI Connext": {
-    "name": "DDS Video: Real-time Video Streaming with RTI Connext",
-    "description": "The DDS Video application demonstrates how video frames can be written to or read from a DDS databus in order to provide flexible integration between Holosca...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/dds/dds_video/docs/workflow_dds_video_app.png",
-    "tags": [
+      "Signal Processing",
       "Networking",
-      "Integration",
-      "Transport Tuning",
-      "Geometric Overlay",
-      "Dds",
-      "Rti Connext",
-      "Video Processing",
-      "Visualization",
-      "Shapes"
+      "I/Q Scaling",
+      "Vita49 Protocol Handling",
+      "Fft",
+      "Psd",
+      "Gpudirect",
+      "Udp"
     ],
-    "app_title": "DDS Video: Real-time Video Streaming with RTI Connext",
-    "app_url": "applications/dds/dds_video/"
+    "app_title": "VITA 49 Power Spectral Density (PSD)",
+    "app_url": "applications/psd_pipeline/"
   },
-  "Holoviz UI": {
-    "name": "Holoviz UI",
-    "description": "This application uses the layer callback provided by the Holoviz operator and leverages the Holoviz module API to add an UI layer with elements and a geometr...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_ui.png",
+  "Holoviz sRGB": {
+    "name": "Holoviz sRGB",
+    "description": "This application demonstrates the handling of the sRGB color space supported by the Holoviz operator. The Holoviz operator can convert sRGB input images to l...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/holoviz/template/cookiecutter-holoviz/holoviz_srgb.png",
     "tags": [
       "Computer Vision",
       "Visualization",
-      "Imgui Integration",
-      "Dynamic Gradients",
-      "Holoviz Ui",
-      "Interactive",
-      "Rendering",
-      "Shapes"
+      "Synthetic Test Patterns",
+      "Dual Color Space Control",
+      "Holoviz Srgb",
+      "Eotf",
+      "Rendering"
     ],
-    "app_title": "Holoviz UI",
-    "app_url": "applications/holoviz/holoviz_ui/"
+    "app_title": "Holoviz sRGB",
+    "app_url": "applications/holoviz/holoviz_srgb/"
   },
-  "CUDA Quantum Variational Quantum Eigensolver (VQE)": {
-    "name": "CUDA Quantum Variational Quantum Eigensolver (VQE)",
-    "description": "The Variational Quantum Eigensolver (VQE) is a quantum algorithm designed to approximate the ground state energy of quantum systems. This energy, represented...",
-    "image_url": null,
+  "TAO PeopleNet Detection Model on V4L2 Video Stream": {
+    "name": "TAO PeopleNet Detection Model on V4L2 Video Stream",
+    "description": "Use the TAO PeopleNet available on NGC to detect faces and people in a V4L2 supported video stream. HoloViz is used to draw bounding boxes around the detecti...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/tao_peoplenet/docs/meeting.gif",
     "tags": [
-      "Specialized Tools",
-      "Integration",
-      "Hamiltonian Minimization",
-      "Parameter Optimization",
-      "Vqe",
-      "Quantum Computing"
-    ],
-    "app_title": "CUDA Quantum Variational Quantum Eigensolver (VQE)",
-    "app_url": "applications/cuda_quantum/"
-  },
-  "Endoscopy Tool Segmentation from MONAI Model Zoo": {
-    "name": "Endoscopy Tool Segmentation from MONAI Model Zoo",
-    "description": "This endoscopy tool segmentation application runs the MONAI Endoscopic Tool Segmentation from MONAI Model Zoo. This HoloHub application has been verified on...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
+      "Computer Vision",
       "Video",
-      "Onnx Graphsurgeon",
-      "Endoscopic Instrument Analysis",
-      "Monai Model Zoo",
-      "Endoscopy",
-      "Segmentation",
-      "Video Processing"
+      "Face Detection",
+      "Bounding Box Filtering",
+      "Holoviz Ui",
+      "Video Processing",
+      "Detection"
     ],
-    "app_title": "Endoscopy Tool Segmentation from MONAI Model Zoo",
-    "app_url": "applications/monai_endoscopic_tool_seg/"
+    "app_title": "TAO PeopleNet Detection Model on V4L2 Video Stream",
+    "app_url": "applications/tao_peoplenet/"
   },
-  "Orsi Academy Multi AI and AR Visualization": {
-    "name": "Orsi Academy Multi AI and AR Visualization",
-    "description": "3D models are used in surgery to improve patient outcomes. They provide information on patient specific anatomies that are not visible in the present surgica...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_multi_ai_ar/docs/multi_ai_1.png",
+  "Real-time Riva ASR to local-LLM": {
+    "name": "Real-time Riva ASR to local-LLM",
+    "description": "This application streams microphone input to NVIDIA Riva Automatic Speech Recognition (ASR), which once the user specifies they are done speaking, passes the...",
+    "image_url": null,
     "tags": [
       "Healthcare AI",
-      "Mixed Reality",
-      "Occlusion Mitigation",
-      "Depth Aware Compositing",
-      "Augmented Reality",
-      "Segmentation",
-      "Multiai",
-      "Vtk"
+      "Audio",
+      "Streaming Asr Pipeline",
+      "Quantized Model Inference",
+      "Automatic Speech Recognition",
+      "Local Llm",
+      "Speech To Text",
+      "Radiology Imaging"
     ],
-    "app_title": "Orsi Academy Multi AI and AR Visualization",
-    "app_url": "applications/orsi/orsi_multi_ai_ar/"
+    "app_title": "Real-time Riva ASR to local-LLM",
+    "app_url": "applications/asr_to_llm/"
   },
-  "GPU-Accelerated Orthorectification with NVIDIA OptiX": {
-    "name": "GPU-Accelerated Orthorectification with NVIDIA OptiX",
-    "description": "This application is an example of utilizing the nvidia OptiX SDK via the PyOptix bindings to create per-frame orthorectified imagery. In this example, one ca...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orthorectification_with_optix/docs/odm_ortho_pipeline.png",
+  "Chat with NVIDIA NIM": {
+    "name": "Chat with NVIDIA NIM",
+    "description": "This is a sample application that shows how to use the OpenAI SDK with NVIDIA Inference Microservice (NIM). Whether you are using a NIM from build.nvidia.com...",
+    "image_url": null,
     "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Digital Elevation Model Integration",
-      "Per Frame Geoprojection",
-      "Optix",
-      "Drone",
-      "Orthorectification",
-      "Image Processing"
+      "NLP & Conversational",
+      "Integration",
+      "Model Switching",
+      "Yaml Configuration",
+      "Openai Api",
+      "Nim",
+      "Local Llm"
     ],
-    "app_title": "GPU-Accelerated Orthorectification with NVIDIA OptiX",
-    "app_url": "applications/orthorectification_with_optix/"
+    "app_title": "Chat with NVIDIA NIM",
+    "app_url": "applications/nvidia_nim/nvidia_nim_chat/"
   },
   "Advanced Networking Benchmark": {
     "name": "Advanced Networking Benchmark",
@@ -991,6 +957,144 @@
     "app_title": "PVA-Accelerated Image Sharpening",
     "app_url": "applications/pva_video_filter/"
   },
+  "GPU-Accelerated Orthorectification with NVIDIA OptiX": {
+    "name": "GPU-Accelerated Orthorectification with NVIDIA OptiX",
+    "description": "This application is an example of utilizing the nvidia OptiX SDK via the PyOptix bindings to create per-frame orthorectified imagery. In this example, one ca...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orthorectification_with_optix/docs/odm_ortho_pipeline.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Digital Elevation Model Integration",
+      "Per Frame Geoprojection",
+      "Optix",
+      "Drone",
+      "Orthorectification",
+      "Image Processing"
+    ],
+    "app_title": "GPU-Accelerated Orthorectification with NVIDIA OptiX",
+    "app_url": "applications/orthorectification_with_optix/"
+  },
+  "Simple CV-CUDA": {
+    "name": "Simple CV-CUDA",
+    "description": "This application demonstrates seamless interoperability between Holoscan tensors and CV-CUDA tensors. The image processing pipeline is just a simple flip of...",
+    "image_url": null,
+    "tags": [
+      "Computer Vision",
+      "Video",
+      "Buffer Reuse",
+      "Tensor Interop",
+      "Cv Cuda",
+      "Video Processing",
+      "Endoscopy",
+      "Visualization"
+    ],
+    "app_title": "Simple CV-CUDA",
+    "app_url": "applications/cvcuda_basic/"
+  },
+  "Distributed H.264 Endoscopy Tool Tracking": {
+    "name": "Distributed H.264 Endoscopy Tool Tracking",
+    "description": "This application is similar to the H.264 Endoscopy Tool Tracking application, but this distributed version divides the application into three fragments: This...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Endoscopic Tool Tracking",
+      "Distributed Ucx Pipeline",
+      "H.264",
+      "Holoviz Hdr",
+      "Lstm Model Zoo",
+      "Tensorrt",
+      "Endoscopy"
+    ],
+    "app_title": "Distributed H.264 Endoscopy Tool Tracking",
+    "app_url": "applications/distributed/ucx/ucx_h264_endoscopy_tool_tracking/"
+  },
+  "Basic Networking Ping": {
+    "name": "Basic Networking Ping",
+    "description": "This application takes the existing ping example that runs over Holoscan ports and instead uses the basic network operator to run over a UDP socket. The basi...",
+    "image_url": null,
+    "tags": [
+      "Networking",
+      "Distributed",
+      "Ping Pong Messaging",
+      "Burst Payload Transmission",
+      "Udp",
+      "Communications",
+      "Client",
+      "Server"
+    ],
+    "app_title": "Basic Networking Ping",
+    "app_url": "applications/basic_networking_ping/"
+  },
+  "Orsi Academy Surgical Tool Segmentation and AR Overlay": {
+    "name": "Orsi Academy Surgical Tool Segmentation and AR Overlay",
+    "description": "3D models are used in surgery to improve patient outcomes. They provide information on patient specific anatomies that are not visible in the present surgica...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_segmentation_ar/docs/orsi_segmentation.png",
+    "tags": [
+      "Healthcare AI",
+      "Mixed Reality",
+      "Occlusion Handling",
+      "Robotic Surgery Assistance",
+      "Augmented Reality",
+      "Vtk",
+      "Segmentation",
+      "Endoscopy"
+    ],
+    "app_title": "Orsi Academy Surgical Tool Segmentation and AR Overlay",
+    "app_url": "applications/orsi/orsi_segmentation_ar/"
+  },
+  "Velodyne VLP-16 Lidar Viewer": {
+    "name": "Velodyne VLP-16 Lidar Viewer",
+    "description": "In this application we demonstrate how to use Holoscan SDK for low-latency lidar processing. We receive lidar packets from a Velodyne VLP-16 lidar sensor, co...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/velodyne_lidar_app/doc/VLP10HzMontereyHighway.gif",
+    "tags": [
+      "Signal Processing",
+      "Lidar",
+      "Spherical Cartesian Conversion",
+      "Rolling Buffer Accumulation",
+      "Velodyne",
+      "Point Cloud",
+      "Udp",
+      "Visualization"
+    ],
+    "app_title": "Velodyne VLP-16 Lidar Viewer",
+    "app_url": "applications/velodyne_lidar_app/"
+  },
+  "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming": {
+    "name": "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming",
+    "description": "This application demonstrates how to offload heavy workloads to a remote Holoscan application using gRPC. In this sample application, we divided the h.264 En...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/distributed/grpc/grpc_h264_endoscopy_tool_tracking/static/overview.png",
+    "tags": [
+      "Healthcare AI",
+      "Distributed",
+      "Workload Offloading",
+      "Asynchronous Queues",
+      "Grpc",
+      "H.264",
+      "Tracking",
+      "Video Decoding"
+    ],
+    "app_title": "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming",
+    "app_url": "applications/distributed/grpc/grpc_h264_endoscopy_tool_tracking/"
+  },
+  "Volume rendering using ClaraViz": {
+    "name": "Volume rendering using ClaraViz",
+    "description": "This application loads a medical CT scan and renders it in real time at interactive frame rates using ClaraViz (https://github.com/NVIDIA/clara-viz). The app...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/volume_rendering/screenshot.png",
+    "tags": [
+      "Healthcare AI",
+      "Visualization",
+      "Hounsfield Scale Transfer Functions",
+      "Volume Rendering Presets",
+      "Claraviz",
+      "Volume",
+      "Segmentation",
+      "Interactive",
+      "Total Segmentator"
+    ],
+    "app_title": "Volume rendering using ClaraViz",
+    "app_url": "applications/volume_rendering/"
+  },
   "AJA Video Capture": {
     "name": "AJA Video Capture",
     "description": "Minimal example to demonstrate the use of the aja source operator to capture device input and stream to holoviz operator. Visit the SDK User Guide to setup t...",
@@ -1005,6 +1109,24 @@
     ],
     "app_title": "AJA Video Capture",
     "app_url": "applications/aja_video_capture/"
+  },
+  "Orsi Academy In-Out Body Detection and Surgical Video Anonymization": {
+    "name": "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
+    "description": "In robotic surgery, anonymization of video is necessary to ensure privacy and protect patient data. During e.g. swapping of robotic tools or lens cleaning th...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_in_out_body/docs/anonymization.png",
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Anonymization Boundary",
+      "Glsl Blur",
+      "Computer Vision",
+      "Video Processing",
+      "Detection",
+      "Multiai",
+      "Visualization"
+    ],
+    "app_title": "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
+    "app_url": "applications/orsi/orsi_in_out_body/"
   },
   "H.264 Endoscopy Tool Tracking": {
     "name": "H.264 Endoscopy Tool Tracking",
@@ -1024,6 +1146,39 @@
     "app_title": "H.264 Endoscopy Tool Tracking",
     "app_url": "applications/h264/h264_endoscopy_tool_tracking/"
   },
+  "Orsi Academy Multi AI and AR Visualization": {
+    "name": "Orsi Academy Multi AI and AR Visualization",
+    "description": "3D models are used in surgery to improve patient outcomes. They provide information on patient specific anatomies that are not visible in the present surgica...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_multi_ai_ar/docs/multi_ai_1.png",
+    "tags": [
+      "Healthcare AI",
+      "Mixed Reality",
+      "Occlusion Mitigation",
+      "Depth Aware Compositing",
+      "Augmented Reality",
+      "Segmentation",
+      "Multiai",
+      "Vtk"
+    ],
+    "app_title": "Orsi Academy Multi AI and AR Visualization",
+    "app_url": "applications/orsi/orsi_multi_ai_ar/"
+  },
+  "H.264 Video Decode": {
+    "name": "H.264 Video Decode",
+    "description": "This is a minimal reference application demonstrating usage of H.264 video decode operators. This application makes use of H.264 elementary stream reader ope...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Hardware Accelerated Decode",
+      "Frame Synchronization",
+      "H.264",
+      "Video Decoding",
+      "Endoscopy"
+    ],
+    "app_title": "H.264 Video Decode",
+    "app_url": "applications/h264/h264_video_decode/"
+  },
   "OpenIGTLink 3D Slicer: Bidirectional Video Streaming with AI Segmentation": {
     "name": "OpenIGTLink 3D Slicer: Bidirectional Video Streaming with AI Segmentation",
     "description": "This application demonstrates how to interface Holoscan SDK with 3D Slicer, using the OpenIGTLink protocol. The application is shown in the application graph...",
@@ -1041,6 +1196,112 @@
     ],
     "app_title": "OpenIGTLink 3D Slicer: Bidirectional Video Streaming with AI Segmentation",
     "app_url": "applications/openigtlink_3dslicer/"
+  },
+  "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation": {
+    "name": "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
+    "description": "In this application, we show how to build a Multi AI application with detection and segmentation models, write postprocessing operators using CuPy and NumPy...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/multiai_endoscopy/images/app_multiai_endoscopy.png",
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Surgical Instrument Tracking",
+      "Laparoscopic Analysis",
+      "Monai Model Zoo",
+      "Endoscopy",
+      "Ssd",
+      "Segmentation",
+      "Multiai"
+    ],
+    "app_title": "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
+    "app_url": "applications/multiai_endoscopy/"
+  },
+  "VPI Stereo Vision": {
+    "name": "VPI Stereo Vision",
+    "description": "Demo pipeline showing stereo disparity estimation using the Vision Programming Interface VPI. This pipeline takes video from a stereo camera and uses VPI's s...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/vpi_stereo/images/vpi_stereo.gif",
+    "tags": [
+      "Computer Vision",
+      "Video",
+      "Disparity Mapping",
+      "Stereo Rectification",
+      "Camera",
+      "Depth",
+      "Stereo",
+      "Visualization"
+    ],
+    "app_title": "VPI Stereo Vision",
+    "app_url": "applications/vpi_stereo/"
+  },
+  "Intel RealSense Camera Visualizer": {
+    "name": "Intel RealSense Camera Visualizer",
+    "description": "Visualizes frames captured from an Intel RealSense camera. This application requires an Intel RealSense camera. At the top level of the holohub run the follo...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/realsense_visualizer/screenshot.png",
+    "tags": [
+      "Computer Vision",
+      "Visualization",
+      "Dual Pipeline Architecture",
+      "Unbounded Stream Allocation",
+      "Camera",
+      "Depth",
+      "Holoviz Ui",
+      "Sensor"
+    ],
+    "app_title": "Intel RealSense Camera Visualizer",
+    "app_url": "applications/realsense_visualizer/"
+  },
+  "Stereo Vision": {
+    "name": "Stereo Vision",
+    "description": "A demo pipeline showcasing stereo disparity estimation. This pipeline takes video from a stereo camera and estimates disparity using DNN ESS. The disparity m...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/stereo_vision/images/plants.gif",
+    "tags": [
+      "Computer Vision",
+      "Video",
+      "Stereo Rectification",
+      "Disparity Confidence Masking",
+      "Stereo",
+      "Depth",
+      "Camera",
+      "Visualization",
+      "Image Processing"
+    ],
+    "app_title": "Stereo Vision",
+    "app_url": "applications/stereo_vision/"
+  },
+  "Deltacast Videomaster Transmitter": {
+    "name": "Deltacast Videomaster Transmitter",
+    "description": "This application demonstrates the use of videomaster_transmitter to transmit a video stream through a dedicated IO device. This application uses the DELTACAS...",
+    "image_url": null,
+    "tags": [
+      "Healthcare AI",
+      "Video",
+      "Device Output Integration",
+      "Low Latency Memory Pools",
+      "Deltacast",
+      "Endoscopy",
+      "Rdma",
+      "Videomaster",
+      "Gpudirect"
+    ],
+    "app_title": "Deltacast Videomaster Transmitter",
+    "app_url": "applications/deltacast_transmitter/"
+  },
+  "Distributed Endoscopy Tool Tracking with gRPC Streaming": {
+    "name": "Distributed Endoscopy Tool Tracking with gRPC Streaming",
+    "description": "This application demonstrates how to offload heavy workloads to a remote Holoscan application using gRPC. In this sample application, we divided the Endoscop...",
+    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/distributed/grpc/grpc_endoscopy_tool_tracking/static/overview.png",
+    "tags": [
+      "Healthcare AI",
+      "Distributed",
+      "Lstm Tensorrt",
+      "Asynchronous Queues",
+      "Grpc",
+      "Video Processing",
+      "Computer Vision",
+      "Tracking",
+      "Visualization"
+    ],
+    "app_title": "Distributed Endoscopy Tool Tracking with gRPC Streaming",
+    "app_url": "applications/distributed/grpc/grpc_endoscopy_tool_tracking/"
   },
   "ProHawk Video Replayer": {
     "name": "ProHawk Video Replayer",
@@ -1076,266 +1337,5 @@
     ],
     "app_title": "Radar Signal Processing over Network",
     "app_url": "applications/network_radar_pipeline/"
-  },
-  "Basic Networking Ping": {
-    "name": "Basic Networking Ping",
-    "description": "This application takes the existing ping example that runs over Holoscan ports and instead uses the basic network operator to run over a UDP socket. The basi...",
-    "image_url": null,
-    "tags": [
-      "Networking",
-      "Distributed",
-      "Ping Pong Messaging",
-      "Burst Payload Transmission",
-      "Udp",
-      "Communications",
-      "Client",
-      "Server"
-    ],
-    "app_title": "Basic Networking Ping",
-    "app_url": "applications/basic_networking_ping/"
-  },
-  "Orsi Academy In-Out Body Detection and Surgical Video Anonymization": {
-    "name": "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
-    "description": "In robotic surgery, anonymization of video is necessary to ensure privacy and protect patient data. During e.g. swapping of robotic tools or lens cleaning th...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_in_out_body/docs/anonymization.png",
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Anonymization Boundary",
-      "Glsl Blur",
-      "Computer Vision",
-      "Video Processing",
-      "Detection",
-      "Multiai",
-      "Visualization"
-    ],
-    "app_title": "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
-    "app_url": "applications/orsi/orsi_in_out_body/"
-  },
-  "Volume rendering using ClaraViz": {
-    "name": "Volume rendering using ClaraViz",
-    "description": "This application loads a medical CT scan and renders it in real time at interactive frame rates using ClaraViz (https://github.com/NVIDIA/clara-viz). The app...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/volume_rendering/screenshot.png",
-    "tags": [
-      "Healthcare AI",
-      "Visualization",
-      "Hounsfield Scale Transfer Functions",
-      "Volume Rendering Presets",
-      "Claraviz",
-      "Volume",
-      "Segmentation",
-      "Interactive",
-      "Total Segmentator"
-    ],
-    "app_title": "Volume rendering using ClaraViz",
-    "app_url": "applications/volume_rendering/"
-  },
-  "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming": {
-    "name": "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming",
-    "description": "This application demonstrates how to offload heavy workloads to a remote Holoscan application using gRPC. In this sample application, we divided the h.264 En...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/distributed/grpc/grpc_h264_endoscopy_tool_tracking/static/overview.png",
-    "tags": [
-      "Healthcare AI",
-      "Distributed",
-      "Workload Offloading",
-      "Asynchronous Queues",
-      "Grpc",
-      "H.264",
-      "Tracking",
-      "Video Decoding"
-    ],
-    "app_title": "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming",
-    "app_url": "applications/distributed/grpc/grpc_h264_endoscopy_tool_tracking/"
-  },
-  "Deltacast Videomaster Transmitter": {
-    "name": "Deltacast Videomaster Transmitter",
-    "description": "This application demonstrates the use of videomaster_transmitter to transmit a video stream through a dedicated IO device. This application uses the DELTACAS...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Device Output Integration",
-      "Low Latency Memory Pools",
-      "Deltacast",
-      "Endoscopy",
-      "Rdma",
-      "Videomaster",
-      "Gpudirect"
-    ],
-    "app_title": "Deltacast Videomaster Transmitter",
-    "app_url": "applications/deltacast_transmitter/"
-  },
-  "Stereo Vision": {
-    "name": "Stereo Vision",
-    "description": "A demo pipeline showcasing stereo disparity estimation. This pipeline takes video from a stereo camera and estimates disparity using DNN ESS. The disparity m...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/stereo_vision/images/plants.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Stereo Rectification",
-      "Disparity Confidence Masking",
-      "Stereo",
-      "Depth",
-      "Camera",
-      "Visualization",
-      "Image Processing"
-    ],
-    "app_title": "Stereo Vision",
-    "app_url": "applications/stereo_vision/"
-  },
-  "Orsi Academy Surgical Tool Segmentation and AR Overlay": {
-    "name": "Orsi Academy Surgical Tool Segmentation and AR Overlay",
-    "description": "3D models are used in surgery to improve patient outcomes. They provide information on patient specific anatomies that are not visible in the present surgica...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/orsi/orsi_segmentation_ar/docs/orsi_segmentation.png",
-    "tags": [
-      "Healthcare AI",
-      "Mixed Reality",
-      "Occlusion Handling",
-      "Robotic Surgery Assistance",
-      "Augmented Reality",
-      "Vtk",
-      "Segmentation",
-      "Endoscopy"
-    ],
-    "app_title": "Orsi Academy Surgical Tool Segmentation and AR Overlay",
-    "app_url": "applications/orsi/orsi_segmentation_ar/"
-  },
-  "Intel RealSense Camera Visualizer": {
-    "name": "Intel RealSense Camera Visualizer",
-    "description": "Visualizes frames captured from an Intel RealSense camera. This application requires an Intel RealSense camera. At the top level of the holohub run the follo...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/realsense_visualizer/screenshot.png",
-    "tags": [
-      "Computer Vision",
-      "Visualization",
-      "Dual Pipeline Architecture",
-      "Unbounded Stream Allocation",
-      "Camera",
-      "Depth",
-      "Holoviz Ui",
-      "Sensor"
-    ],
-    "app_title": "Intel RealSense Camera Visualizer",
-    "app_url": "applications/realsense_visualizer/"
-  },
-  "Distributed H.264 Endoscopy Tool Tracking": {
-    "name": "Distributed H.264 Endoscopy Tool Tracking",
-    "description": "This application is similar to the H.264 Endoscopy Tool Tracking application, but this distributed version divides the application into three fragments: This...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Endoscopic Tool Tracking",
-      "Distributed Ucx Pipeline",
-      "H.264",
-      "Holoviz Hdr",
-      "Lstm Model Zoo",
-      "Tensorrt",
-      "Endoscopy"
-    ],
-    "app_title": "Distributed H.264 Endoscopy Tool Tracking",
-    "app_url": "applications/distributed/ucx/ucx_h264_endoscopy_tool_tracking/"
-  },
-  "VPI Stereo Vision": {
-    "name": "VPI Stereo Vision",
-    "description": "Demo pipeline showing stereo disparity estimation using the Vision Programming Interface VPI. This pipeline takes video from a stereo camera and uses VPI's s...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/vpi_stereo/images/vpi_stereo.gif",
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Disparity Mapping",
-      "Stereo Rectification",
-      "Camera",
-      "Depth",
-      "Stereo",
-      "Visualization"
-    ],
-    "app_title": "VPI Stereo Vision",
-    "app_url": "applications/vpi_stereo/"
-  },
-  "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation": {
-    "name": "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
-    "description": "In this application, we show how to build a Multi AI application with detection and segmentation models, write postprocessing operators using CuPy and NumPy...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/multiai_endoscopy/images/app_multiai_endoscopy.png",
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Surgical Instrument Tracking",
-      "Laparoscopic Analysis",
-      "Monai Model Zoo",
-      "Endoscopy",
-      "Ssd",
-      "Segmentation",
-      "Multiai"
-    ],
-    "app_title": "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
-    "app_url": "applications/multiai_endoscopy/"
-  },
-  "Velodyne VLP-16 Lidar Viewer": {
-    "name": "Velodyne VLP-16 Lidar Viewer",
-    "description": "In this application we demonstrate how to use Holoscan SDK for low-latency lidar processing. We receive lidar packets from a Velodyne VLP-16 lidar sensor, co...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/velodyne_lidar_app/doc/VLP10HzMontereyHighway.gif",
-    "tags": [
-      "Signal Processing",
-      "Lidar",
-      "Spherical Cartesian Conversion",
-      "Rolling Buffer Accumulation",
-      "Velodyne",
-      "Point Cloud",
-      "Udp",
-      "Visualization"
-    ],
-    "app_title": "Velodyne VLP-16 Lidar Viewer",
-    "app_url": "applications/velodyne_lidar_app/"
-  },
-  "Distributed Endoscopy Tool Tracking with gRPC Streaming": {
-    "name": "Distributed Endoscopy Tool Tracking with gRPC Streaming",
-    "description": "This application demonstrates how to offload heavy workloads to a remote Holoscan application using gRPC. In this sample application, we divided the Endoscop...",
-    "image_url": "https://raw.githubusercontent.com/nvidia-holoscan/holohub/main/applications/distributed/grpc/grpc_endoscopy_tool_tracking/static/overview.png",
-    "tags": [
-      "Healthcare AI",
-      "Distributed",
-      "Lstm Tensorrt",
-      "Asynchronous Queues",
-      "Grpc",
-      "Video Processing",
-      "Computer Vision",
-      "Tracking",
-      "Visualization"
-    ],
-    "app_title": "Distributed Endoscopy Tool Tracking with gRPC Streaming",
-    "app_url": "applications/distributed/grpc/grpc_endoscopy_tool_tracking/"
-  },
-  "Simple CV-CUDA": {
-    "name": "Simple CV-CUDA",
-    "description": "This application demonstrates seamless interoperability between Holoscan tensors and CV-CUDA tensors. The image processing pipeline is just a simple flip of...",
-    "image_url": null,
-    "tags": [
-      "Computer Vision",
-      "Video",
-      "Buffer Reuse",
-      "Tensor Interop",
-      "Cv Cuda",
-      "Video Processing",
-      "Endoscopy",
-      "Visualization"
-    ],
-    "app_title": "Simple CV-CUDA",
-    "app_url": "applications/cvcuda_basic/"
-  },
-  "H.264 Video Decode": {
-    "name": "H.264 Video Decode",
-    "description": "This is a minimal reference application demonstrating usage of H.264 video decode operators. This application makes use of H.264 elementary stream reader ope...",
-    "image_url": null,
-    "tags": [
-      "Healthcare AI",
-      "Video",
-      "Hardware Accelerated Decode",
-      "Frame Synchronization",
-      "H.264",
-      "Video Decoding",
-      "Endoscopy"
-    ],
-    "app_title": "H.264 Video Decode",
-    "app_url": "applications/h264/h264_video_decode/"
   }
 }
