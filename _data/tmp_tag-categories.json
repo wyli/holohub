@@ -4,34 +4,34 @@
     "count": 28,
     "icon": "visibility",
     "ids": [
-      "Depth Anything V2",
-      "Real-Time Face and Text Deidentification",
-      "Laser Detection",
-      "Holoviz vsync",
-      "Image Processing with MATLAB GPU Coder",
-      "Object Detection using PyTorch Faster R-CNN",
-      "SAM 2: Segment Anything in Images and Videos",
-      "EVT Camera Calibration",
-      "Holoviz YUV",
-      "VILA Live",
+      "TAO PeopleNet Detection Model on V4L2 Video Stream",
+      "Holoviz HDR",
       "Holoviz UI",
       "Qt Video Replayer",
-      "WebRTC Holoviz Server",
       "Body Pose Estimation",
-      "USB Camera Calibration",
       "Yolo Object Detection",
-      "Holoviz HDR",
-      "Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks",
-      "NVIDIA NV-CLIP NIM",
       "Holoviz sRGB",
-      "TAO PeopleNet Detection Model on V4L2 Video Stream",
-      "PVA-Accelerated Image Sharpening",
-      "GPU-Accelerated Orthorectification with NVIDIA OptiX",
+      "VILA Live",
+      "WebRTC Holoviz Server",
+      "USB Camera Calibration",
+      "Object Detection using PyTorch Faster R-CNN",
+      "Image Processing with MATLAB GPU Coder",
+      "Florence-2: Advancing a Unified Representation for a Variety of Vision Tasks",
+      "Depth Anything V2",
+      "EVT Camera Calibration",
+      "Real-Time Face and Text Deidentification",
+      "Laser Detection",
+      "Holoviz YUV",
+      "NVIDIA NV-CLIP NIM",
+      "Holoviz vsync",
+      "SAM 2: Segment Anything in Images and Videos",
       "Simple CV-CUDA",
-      "AJA Video Capture",
-      "VPI Stereo Vision",
+      "Stereo Vision",
       "Intel RealSense Camera Visualizer",
-      "Stereo Vision"
+      "VPI Stereo Vision",
+      "PVA-Accelerated Image Sharpening",
+      "AJA Video Capture",
+      "GPU-Accelerated Orthorectification with NVIDIA OptiX"
     ]
   },
   {
@@ -39,8 +39,8 @@
     "count": 2,
     "icon": "view_in_ar",
     "ids": [
-      "Medical Image Viewer in XR",
-      "XR + Holoviz"
+      "XR + Holoviz",
+      "Medical Image Viewer in XR"
     ]
   },
   {
@@ -48,37 +48,37 @@
     "count": 31,
     "icon": "medical_services",
     "ids": [
-      "Endoscopy Tool Tracking",
-      "Multi-AI Ultrasound",
-      "High-Speed Endoscopy",
-      "SSD Detection for Endoscopy Tools",
-      "Ultrasound Beamforming with MATLAB GPU Coder",
       "Colonoscopy Polyp Segmentation",
-      "Speech-to-text + Large Language Model",
       "Endoscopy Out of Body Detection",
-      "EHR Agent Framework",
       "UCX-based Distributed Endoscopy Tool Tracking",
-      "Ultrasound Bone Scoliosis Segmentation",
-      "Hyperspectral Image Segmentation",
-      "Endoscopy Depth Estimation",
-      "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
-      "FHIR Client for Retrieving and Posting FHIR Resources",
-      "Imaging AI Whole Body Segmentation",
       "Endoscopy Tool Segmentation from MONAI Model Zoo",
+      "Hyperspectral Image Segmentation",
+      "Medical Imaging Segmentation with NVIDIA Vista-3D NIM",
       "Real-time Riva ASR to local-LLM",
+      "Endoscopy Tool Tracking",
+      "Ultrasound Beamforming with MATLAB GPU Coder",
+      "EHR Agent Framework",
+      "FHIR Client for Retrieving and Posting FHIR Resources",
+      "Endoscopy Depth Estimation",
+      "SSD Detection for Endoscopy Tools",
+      "Multi-AI Ultrasound",
+      "Speech-to-text + Large Language Model",
+      "Ultrasound Bone Scoliosis Segmentation",
+      "High-Speed Endoscopy",
+      "Imaging AI Whole Body Segmentation",
+      "Distributed Endoscopy Tool Tracking with gRPC Streaming",
+      "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
+      "Orsi Academy Multi AI and AR Visualization",
+      "Volume rendering using ClaraViz",
       "Distributed H.264 Endoscopy Tool Tracking",
+      "Deltacast Videomaster Transmitter",
+      "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
+      "H.264 Video Decode",
+      "ProHawk Video Replayer",
+      "H.264 Endoscopy Tool Tracking",
       "Orsi Academy Surgical Tool Segmentation and AR Overlay",
       "Distributed H.264 Endoscopy Tool Tracking with gRPC Streaming",
-      "Volume rendering using ClaraViz",
-      "Orsi Academy In-Out Body Detection and Surgical Video Anonymization",
-      "H.264 Endoscopy Tool Tracking",
-      "Orsi Academy Multi AI and AR Visualization",
-      "H.264 Video Decode",
-      "OpenIGTLink 3D Slicer: Bidirectional Video Streaming with AI Segmentation",
-      "Multi AI SSD Detection and MONAI Endoscopic Tool Segmentation",
-      "Deltacast Videomaster Transmitter",
-      "Distributed Endoscopy Tool Tracking with gRPC Streaming",
-      "ProHawk Video Replayer"
+      "OpenIGTLink 3D Slicer: Bidirectional Video Streaming with AI Segmentation"
     ]
   },
   {
@@ -86,8 +86,8 @@
     "count": 2,
     "icon": "chat",
     "ids": [
-      "HoloChat",
-      "Chat with NVIDIA NIM"
+      "Chat with NVIDIA NIM",
+      "HoloChat"
     ]
   },
   {
@@ -95,11 +95,11 @@
     "count": 5,
     "icon": "hub",
     "ids": [
-      "DDS Video: Real-time Video Streaming with RTI Connext",
       "WebRTC Video Server",
       "WebRTC Video Client",
-      "Advanced Networking Benchmark",
-      "Basic Networking Ping"
+      "DDS Video: Real-time Video Streaming with RTI Connext",
+      "Basic Networking Ping",
+      "Advanced Networking Benchmark"
     ]
   },
   {
@@ -107,15 +107,15 @@
     "count": 9,
     "icon": "radar",
     "ids": [
-      "Simple Radar Pipeline",
       "FM Radio Automatic Speech Recognition",
-      "Basic Pulse Description Word (PDW) Generator",
+      "Simple Radar Pipeline",
       "Streaming Synthetic Aperture Radar",
-      "Software Defined Radio FM Demodulation",
       "Power Spectral Density with cuNumeric",
       "VITA 49 Power Spectral Density (PSD)",
-      "Velodyne VLP-16 Lidar Viewer",
-      "Radar Signal Processing over Network"
+      "Basic Pulse Description Word (PDW) Generator",
+      "Software Defined Radio FM Demodulation",
+      "Radar Signal Processing over Network",
+      "Velodyne VLP-16 Lidar Viewer"
     ]
   },
   {
