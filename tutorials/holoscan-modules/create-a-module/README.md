@@ -72,12 +72,13 @@ with discovery through the Holoscan ecosystem site rather than word of mouth.
    on the NVIDIA HoloHub website. Prospective users and their AI agents find your library
    by searching the Holoscan ecosystem instead of guessing repo names. A blank template
    puts the entire burden of discovery on you.
-2. **Zero-to-scaffold in one command.** `./holohub create … --template modules/template`
-   produces a working CMake + scikit-build-core build, a Dockerfile pinned to a known
-   Holoscan SDK image, pybind11 bindings wired up, a passing test layout, and CI
-   workflow stubs. Cookiecutter prompts keep the slug, namespace, and package name
-   consistent so the result imports cleanly as `holoscan.<your_slug>`.
-3. **CLI built for the Holoscan lifecycle.** `./holohub build`, `test`, `run`,
+2. **Zero-to-scaffold in one command.** `holoscan create <name>` produces a working
+   CMake + scikit-build-core build, a Dockerfile pinned to a known Holoscan SDK image,
+   pybind11 bindings wired up, a passing test layout, and CI workflow stubs. The
+   template ships inside the `holoscan-cli` wheel, so no HoloHub clone is required.
+   Cookiecutter prompts keep the slug, namespace, and package name consistent so the
+   result imports cleanly as `holoscan.<your_slug>`.
+3. **CLI built for the Holoscan lifecycle.** `holoscan build`, `test`, `run`,
    `package --pkg-generator DEB,WHEEL`, `install --dev`, and `list` are tailored to
    Holoscan workflows. In particular, the dev-import hook makes
    `import holoscan.<your_slug>` work from any shell against the live build tree, and
@@ -95,8 +96,8 @@ Over the next sections we'll walk through creating a dedicated project repositor
 Once the project is initialized, you'll need to either build your code via a container or on your local host.
 Please install the appropriate dependencies before continuing.
 
-- A local clone of the **HoloHub** repository
-- [Python >= 3.10](https://www.python.org/downloads/) on the host machine to run the `holohub` script
+- [Python >= 3.10](https://www.python.org/downloads/) on the host machine to run the `holoscan` CLI
+- A local clone of the **HoloHub** repository — only for section 4 (HoloHub-hosted modules)
 
 ### Container Approach (Recommended)
 
@@ -117,41 +118,24 @@ and leverage the project as a dependency.
 
 ### 3.1 Install creation dependencies
 
-From your HoloHub clone, install the template dependencies through the wrapper:
-
-```bash
-./holohub setup --scripts template
-```
-
-Before it runs the setup script, `./holohub` selects an active or managed virtual
-environment. The script then installs Cookiecutter and the metadata-validation
-dependencies through that same interpreter, so the subsequent `./holohub create`
-command can use them.
-
-For a standalone CLI workflow, you can instead install the optional create
-dependencies yourself:
+Install the CLI with its optional creation extra (Cookiecutter plus the
+metadata-validation dependencies). The Module template ships inside the wheel, so no
+HoloHub clone is needed:
 
 ```bash
 python -m pip install 'holoscan-cli[create]'
 ```
 
-Ensure that `python` is the interpreter selected by `./holohub` (for example, by
-activating its virtual environment first); otherwise the dependencies may be installed
-in a different Python environment.
+Inside a HoloHub clone you can instead run `./holohub setup --scripts template`, which
+installs the same dependencies into the interpreter the wrapper selected.
 
-The standalone `holoscan create` workflow also requires a Module template supplied by
-the CLI distribution. Until that self-contained template delivery is available, use
-the HoloHub checkout flow in this tutorial.
+### 3.2 Scaffold with `holoscan create`
 
-### 3.2 Scaffold with `./holohub create`
-
-From your HoloHub clone, pass the unprefixed module name; the template creates
-the `holoscan-<name>` repository directory:
+Pass the unprefixed module name; the template creates the `holoscan-<name>` repository
+directory (defaulting to the current directory when `--directory` is omitted):
 
 ```bash
-./holohub create my-module \
-    --template modules/template \
-    --directory ~/repos
+holoscan create my-module --directory ~/repos
 ```
 
 Cookiecutter will prompt via command line for project details. Enter the following suggested values
@@ -179,8 +163,7 @@ The CLI will further derive some names using these rules:
 *Advanced Users and AI Agents:* For non-interactive use, pass values directly:
 
 ```bash
-./holohub create my-module \
-    --template modules/template \
+holoscan create my-module \
     --directory $HOME \
     --interactive false \
     --context project_name="My Holoscan Sensor Module" \
@@ -201,14 +184,10 @@ Implement your operator (MyModuleOp) in:
   operators/my_module_op/my_module_op.cpp
 
 Build and run:
-  ./holohub run-container
+  holoscan run-container
   # Inside the container:
-  ./holohub build my_module_pipeline
-  ./holohub run   my_module_pipeline --language python
-
-Git repository initialised. Push to a remote when ready:
-  git remote add origin <your-repo-url>
-  git push -u origin main
+  holoscan build my_module_pipeline
+  holoscan run   my_module_pipeline --language cpp
 
 Register your module at https://nvidia-holoscan.github.io/ when ready.
 Successfully created new project: my-module
@@ -218,7 +197,9 @@ Possible next steps:
 - Implement your operator in /home/myuser/holoscan-my-module/operators/
 - Update metadata.json: /home/myuser/holoscan-my-module/metadata.json
 - Update project README
-- Build and test with HoloHub CLI
+- Build and test with: holoscan run-container
+
+Initialized a Git repository on branch main and staged the scaffold.
 ```
 
 ### 3.3 Tour the Generated Tree
@@ -231,13 +212,13 @@ holoscan-my-module/
 │                              #   namespace, binary_packages, platforms, SDK pin)
 ├── pyproject.toml             # scikit-build-core; selectively builds the module
 ├── CMakeLists.txt             # Holoscan discovery, build options, and subprojects
-├── Dockerfile                 # Default SDK image; the wrapper may select a platform-specific image
+├── Dockerfile                 # Default SDK image; the CLI may select a platform-specific image
 ├── README.md                  # Module-facing readme (edit me)
+├── requirements-cli.txt       # Tested holoscan-cli version for this module
 ├── .clang-format              # C++ modules only
 ├── .gitignore
-├── holohub                    # Wrapper script; delegates to its pinned holoscan-cli
 ├── cmake/                     # HoloHubConfigHelpers, pybind11 integration, deb config
-│                              #   (copied in by the cookiecutter post-gen hook)
+│                              #   (vendored from the holoscan-cli wheel at creation)
 ├── operators/
 │   └── my_module_op/
 │       ├── metadata.json      # Schema urn:holohub:operator:v1
@@ -285,13 +266,15 @@ Key things to note:
   `BUILD_ALL` option defaults to `ON` when the project is the top-level build and `OFF`
   when nested inside a parent build. `MY_MODULE_BUILD_TESTING` is a module-scoped
   toggle, independent of CMake's global `BUILD_TESTING`.
-- The `holohub` wrapper script in the project root delegates to a pinned
-  `holoscan-cli` installation. It uses the generated module root as the CLI project
-  root and does not create a nested HoloHub checkout.
-- The generated Dockerfile defaults `BASE_IMAGE` to the SDK's CUDA 13 dGPU image. The
-  wrapper may override that argument with an image selected for the current platform
-  and CUDA environment. Run `./holohub run-container --dryrun` to inspect the resolved
-  image before building.
+- The module ships no launcher script. The globally installed `holoscan` command
+  discovers this module from its root `metadata.json` and uses it as the project root.
+  `requirements-cli.txt` records the CLI version the module was developed against;
+  install it into your environment (`pip install -r requirements-cli.txt`) for a
+  reproducible setup, and the generated Dockerfile installs the same pin into the image.
+- The generated Dockerfile defaults `BASE_IMAGE` to the SDK's CUDA 13 image. The CLI
+  may override that argument with an image selected for the current platform and CUDA
+  environment. Run `holoscan run-container --dryrun` to inspect the resolved image
+  before building.
 
 ### 3.4 Implement the Operator
 
@@ -344,19 +327,19 @@ developing your module before moving on.
 
 ### 3.5 Build, Test, and Iterate in a Container
 
-Use the `./holohub` wrapper to drive it:
+Use the globally installed `holoscan` command to drive it:
 
 ```bash
 cd ~/holoscan-my-module
 
 # Build and run the demo application inside the generated development container
-./holohub run-container -- "./holohub build my_module_pipeline && ./holohub run my_module_pipeline --language <cpp/python>"
+holoscan run-container -- "holoscan build my_module_pipeline && holoscan run my_module_pipeline --language <cpp/python>"
 
 # Run CTest (C++) and PyTest (Python). The generated image does not include Xvfb.
-./holohub test --no-xvfb
+holoscan test --no-xvfb
 
 # Launch the development environment for interactive builds and debugging
-./holohub run-container
+holoscan run-container
 ```
 
 Notes:
@@ -380,17 +363,17 @@ environment from the generated `Dockerfile`. A native build is appropriate only 
 the host has a compatible Holoscan SDK and toolchain; host CUDA, compiler, Python, and
 SDK versions must be compatible with the module's declared minimum SDK version.
 
-From the generated module root, use the `./holohub` wrapper in local mode. This
+From the generated module root, run the `holoscan` command in local mode. This
 uses the same project configuration as the container workflow but runs the build and
 tests directly on the host. Use a separate build parent so native artifacts never mix
 with the container workflow's `build/` tree:
 
 ```bash
 export HOLOSCAN_CLI_BUILD_PARENT_DIR="$PWD/build-native"
-./holohub build my_module_pipeline --local --dryrun --verbose
-./holohub test --local --dryrun --verbose
-./holohub build my_module_pipeline --local
-./holohub test --local
+holoscan build my_module_pipeline --local --dryrun --verbose
+holoscan test --local --dryrun --verbose
+holoscan build my_module_pipeline --local
+holoscan test --local
 ```
 
 The dry runs preview the host commands without executing them. The expected result is
@@ -407,17 +390,17 @@ To use the module from a Python shell or notebook outside of the build directory
 install a development hook:
 
 ```bash
-./holohub install --dev
+holoscan install --dev
 python -c "import holoscan.my_module; print(holoscan.my_module.__file__)"
 ```
 
 The hook writes a `.pth` file plus a small shim into your site-packages that redirects
-`holoscan.my_module` imports to the live build tree. Re-running `./holohub build` after
+`holoscan.my_module` imports to the live build tree. Re-running `holoscan build` after
 a source edit takes effect immediately — no wheel re-install needed. Remove it when
 you're done:
 
 ```bash
-./holohub install --dev --uninstall
+holoscan install --dev --uninstall
 ```
 
 ### 3.8 Declare Dependencies on Other Modules (Optional)
@@ -454,7 +437,7 @@ of this repository.
 Run the following command to generate Debian and Python packages:
 
 ```bash
-./holohub package holoscan-my-module --pkg-generator DEB,WHEEL
+holoscan package holoscan-my-module --pkg-generator DEB,WHEEL
 ...
 CPack: Create package
 CPack: - package: /workspace/my_module/holoscan-my-module_0.1.0_arm64.deb generated.
@@ -499,8 +482,8 @@ project implementation.
 
 You can update these TODOs in `ci.yml`:
 
-1. Update the HoloHub commit pin used by the `holohub` wrapper, if you want CI to track a
-   specific tested commit rather than `main`.
+1. Update the `holoscan-cli` pin in `requirements-cli.txt` if you want CI to track a
+   specific tested CLI version.
 2. For runtime validation, we suggest setting up a self-hosted GitHub runner with GPU and any other
    hardware requirements, then updating the GPU workflow to target that machine.
 
@@ -637,15 +620,15 @@ Fast lookup for repeat use:
 
 | Step | Command | Key file or output |
 | --- | --- | --- |
-| Scaffold | `./holohub create <name> --template modules/template --directory <dir>` | `<dir>/holoscan-<name>/` |
-| Container build | `./holohub build <app>` | `build/<app>/` |
-| Container test | `./holohub test --no-xvfb` | `ctest` + `pytest` output |
-| Native build | `HOLOSCAN_CLI_BUILD_PARENT_DIR=$PWD/build-native ./holohub build <app> --local` | `build-native/<app>/` |
-| Native test | `HOLOSCAN_CLI_BUILD_PARENT_DIR=$PWD/build-native ./holohub test --local` | `ctest` + `pytest` output |
-| Dev import | `./holohub install --dev` | `.pth` shim in site-packages |
-| Package | `./holohub package <name> --pkg-generator DEB,WHEEL` | `build/dist/*.whl`, `<project-root>/*.deb` |
-| List modules | `./holohub list` | `MODULES:` section |
-| Uninstall dev hook | `./holohub install --dev --uninstall` | (removes the shim) |
+| Scaffold | `holoscan create <name> --directory <dir>` | `<dir>/holoscan-<name>/` |
+| Container build | `holoscan build <app>` | `build/<app>/` |
+| Container test | `holoscan test --no-xvfb` | `ctest` + `pytest` output |
+| Native build | `HOLOSCAN_CLI_BUILD_PARENT_DIR=$PWD/build-native holoscan build <app> --local` | `build-native/<app>/` |
+| Native test | `HOLOSCAN_CLI_BUILD_PARENT_DIR=$PWD/build-native holoscan test --local` | `ctest` + `pytest` output |
+| Dev import | `holoscan install --dev` | `.pth` shim in site-packages |
+| Package | `holoscan package <name> --pkg-generator DEB,WHEEL` | `build/dist/*.whl`, `<project-root>/*.deb` |
+| List modules | `holoscan list` | `MODULES:` section |
+| Uninstall dev hook | `holoscan install --dev --uninstall` | (removes the shim) |
 
 ## 6. Troubleshooting
 
@@ -661,7 +644,7 @@ Run the following command to install a `.pth` file in your current Python direct
 at your module build location and also patch the Holoscan SDK import search paths.
 
 ```bash
-./holohub install --dev
+holoscan install --dev
 ```
 
 ### **CMake cannot find `holoscan::core`.**

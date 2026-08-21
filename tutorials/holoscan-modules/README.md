@@ -20,6 +20,8 @@ Browse published modules in the [Modules tab](https://nvidia-holoscan.github.io/
 
 - Holoscan SDK 4.2.0 or later
 - Python 3.10 or later
+- `holoscan-cli` — `pip install 'holoscan-cli[create]'` to scaffold a module,
+  `pip install holoscan-cli` to build, test, and package one
 - C++17-capable compiler and CMake 3.24 or later (for C++ modules)
 
 ## Examples
